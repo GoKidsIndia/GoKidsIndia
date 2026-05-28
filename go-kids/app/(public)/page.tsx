@@ -38,6 +38,7 @@ import {
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { DemoModal } from "@/components/shared/DemoModal";
+import InsightsSection from "@/components/shared/InsightsSection";
 
 const steps = [
   {
@@ -1649,6 +1650,9 @@ export default function HomePage() {
           </StaggerContainer>
         </div>
       </section>
+
+      {/* ── 6.5. INSIGHTS ────────────────────────────────────────── */}
+      <InsightsSection />
 
       {/* ── 7. TESTIMONIALS ──────────────────────────────────────── */}
       <section className="py-20 bg-white">

@@ -7,27 +7,44 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, User, Mail, Phone, Lock, ArrowRight, Loader2, ArrowLeft } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  User,
+  Mail,
+  Phone,
+  Lock,
+  ArrowRight,
+  Loader2,
+  ArrowLeft,
+} from "lucide-react";
 import BrandLogo from "@/components/shared/BrandLogo";
+import GoogleButton from "@/components/shared/GoogleButton";
+import { signIn } from "next-auth/react";
 
-const registerSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(100),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z
-    .string()
-    .regex(/^[6-9]\d{9}$/, "Please enter a valid 10-digit Indian mobile number")
-    .optional()
-    .or(z.literal("")),
-  password: z
-    .string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Must contain at least one uppercase letter")
-    .regex(/[0-9]/, "Must contain at least one number"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords do not match",
-  path: ["confirmPassword"],
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters").max(100),
+    email: z.string().email("Please enter a valid email address"),
+    phone: z
+      .string()
+      .regex(
+        /^[6-9]\d{9}$/,
+        "Please enter a valid 10-digit Indian mobile number",
+      )
+      .optional()
+      .or(z.literal("")),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Must contain at least one uppercase letter")
+      .regex(/[0-9]/, "Must contain at least one number"),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
@@ -37,6 +54,13 @@ export default function RegisterPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [serverError, setServerError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+
+  const handleGoogleSignIn = async () => {
+    // Kept for backward compatibility (GoogleButton handles the click).
+    setIsGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/parent/dashboard" });
+  };
 
   const {
     register,
@@ -60,13 +84,17 @@ export default function RegisterPage() {
       });
       const result = await res.json();
       if (!result.success) {
-        setServerError(result.error || "Registration failed. Please try again.");
+        setServerError(
+          result.error || "Registration failed. Please try again.",
+        );
         return;
       }
       // Redirect to OTP verification with email
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch {
-      setServerError("Network error. Please check your connection and try again.");
+      setServerError(
+        "Network error. Please check your connection and try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -78,11 +106,18 @@ export default function RegisterPage() {
       style={{ background: "#FAFAF8" }}
     >
       {/* Background shapes */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="animate-float absolute top-20 right-20 w-64 h-64 rounded-full opacity-20"
-          style={{ background: "#F5C518", filter: "blur(48px)" }} />
-        <div className="animate-float-delayed absolute bottom-20 left-16 w-48 h-48 rounded-full opacity-15"
-          style={{ background: "#2BBCB0", filter: "blur(40px)" }} />
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <div
+          className="animate-float absolute top-20 right-20 w-64 h-64 rounded-full opacity-20"
+          style={{ background: "#F5C518", filter: "blur(48px)" }}
+        />
+        <div
+          className="animate-float-delayed absolute bottom-20 left-16 w-48 h-48 rounded-full opacity-15"
+          style={{ background: "#2BBCB0", filter: "blur(40px)" }}
+        />
       </div>
 
       <motion.div
@@ -94,7 +129,10 @@ export default function RegisterPage() {
         {/* Card */}
         <div
           className="bg-white rounded-3xl p-8"
-          style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.1)", border: "1px solid #F3F4F6" }}
+          style={{
+            boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+            border: "1px solid #F3F4F6",
+          }}
         >
           {/* Back to Home */}
           <div className="mb-6">
@@ -129,20 +167,51 @@ export default function RegisterPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               className="mb-5 px-4 py-3 rounded-xl text-sm font-medium"
-              style={{ background: "#FEF0EB", color: "#C0392B", border: "1px solid #F4845F" }}
+              style={{
+                background: "#FEF0EB",
+                color: "#C0392B",
+                border: "1px solid #F4845F",
+              }}
             >
               {serverError}
             </motion.div>
           )}
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          {/* ── Google Sign-Up ── */}
+          <GoogleButton
+            callbackUrl="/parent/dashboard"
+            isLoading={isGoogleLoading || isLoading}
+            label="Sign up with Google"
+          />
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 mb-4 mt-2">
+            <div className="flex-1 h-px" style={{ background: "#E5E7EB" }} />
+            <span className="text-xs font-medium" style={{ color: "#9CA3AF" }}>
+              or sign up with email
+            </span>
+            <div className="flex-1 h-px" style={{ background: "#E5E7EB" }} />
+          </div>
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
+          >
             {/* Name */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
                 Full Name
               </label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <User
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("name")}
                   type="text"
@@ -151,26 +220,45 @@ export default function RegisterPage() {
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.name ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.name
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                     fontFamily: "var(--font-inter)",
                   }}
-                  onFocus={(e) => { if (!errors.name) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.name) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.name)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.name)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
               </div>
               {errors.name && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.name.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.name.message}
+                </p>
               )}
             </div>
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Mail
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("email")}
                   type="email"
@@ -179,25 +267,47 @@ export default function RegisterPage() {
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.email ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.email
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.email) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.email) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.email)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.email)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.email.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
-                Mobile Number <span style={{ color: "#9CA3AF", fontWeight: 400 }}>(optional)</span>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
+                Mobile Number{" "}
+                <span style={{ color: "#9CA3AF", fontWeight: 400 }}>
+                  (optional)
+                </span>
               </label>
               <div className="relative">
-                <Phone size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Phone
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("phone")}
                   type="tel"
@@ -206,25 +316,44 @@ export default function RegisterPage() {
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.phone ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.phone
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.phone) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.phone) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.phone)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.phone)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
               </div>
               {errors.phone && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.phone.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.phone.message}
+                </p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
                 Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Lock
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
@@ -233,11 +362,21 @@ export default function RegisterPage() {
                   className="w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.password ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.password
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.password) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.password) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.password)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.password)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
                 <button
                   type="button"
@@ -245,21 +384,34 @@ export default function RegisterPage() {
                   className="absolute right-3.5 top-1/2 -translate-y-1/2"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff size={16} style={{ color: "#9CA3AF" }} /> : <Eye size={16} style={{ color: "#9CA3AF" }} />}
+                  {showPassword ? (
+                    <EyeOff size={16} style={{ color: "#9CA3AF" }} />
+                  ) : (
+                    <Eye size={16} style={{ color: "#9CA3AF" }} />
+                  )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.password.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
             {/* Confirm Password */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
                 Confirm Password
               </label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Lock
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("confirmPassword")}
                   type={showConfirm ? "text" : "password"}
@@ -268,23 +420,43 @@ export default function RegisterPage() {
                   className="w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.confirmPassword ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.confirmPassword
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.confirmPassword) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.confirmPassword) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.confirmPassword)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.confirmPassword)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirm((p) => !p)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                  aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                  aria-label={
+                    showConfirm
+                      ? "Hide confirm password"
+                      : "Show confirm password"
+                  }
                 >
-                  {showConfirm ? <EyeOff size={16} style={{ color: "#9CA3AF" }} /> : <Eye size={16} style={{ color: "#9CA3AF" }} />}
+                  {showConfirm ? (
+                    <EyeOff size={16} style={{ color: "#9CA3AF" }} />
+                  ) : (
+                    <Eye size={16} style={{ color: "#9CA3AF" }} />
+                  )}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.confirmPassword.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.confirmPassword.message}
+                </p>
               )}
             </div>
 

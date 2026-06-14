@@ -39,6 +39,7 @@ import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { DemoModal } from "@/components/shared/DemoModal";
 import InsightsSection from "@/components/shared/InsightsSection";
+import ChatWidget from "@/components/chatbot/ChatWidget";
 
 const steps = [
   {
@@ -89,7 +90,8 @@ const steps = [
 const programsData = [
   {
     title: "Writing Speed",
-    description: "Build fluency and confidence in written expression for school and life.",
+    description:
+      "Build fluency and confidence in written expression for school and life.",
     level: "Beginner",
     category: "Communication",
     iconType: "pencil",
@@ -100,7 +102,8 @@ const programsData = [
   },
   {
     title: "Spelling Mastery",
-    description: "From uncertainty to precision — build a strong vocabulary foundation.",
+    description:
+      "From uncertainty to precision — build a strong vocabulary foundation.",
     level: "Beginner",
     category: "Communication",
     iconType: "text-abc",
@@ -111,7 +114,8 @@ const programsData = [
   },
   {
     title: "Public Speaking",
-    description: "Speak with confidence, clarity, and presence — in class and beyond.",
+    description:
+      "Speak with confidence, clarity, and presence — in class and beyond.",
     level: "Intermediate",
     category: "Communication",
     iconType: "mic",
@@ -123,7 +127,8 @@ const programsData = [
   },
   {
     title: "Critical Thinking",
-    description: "Ask better questions, solve harder problems, think independently.",
+    description:
+      "Ask better questions, solve harder problems, think independently.",
     level: "Intermediate",
     category: "Cognitive",
     iconType: "brain",
@@ -134,7 +139,8 @@ const programsData = [
   },
   {
     title: "Creative Storytelling",
-    description: "Unlock imagination and narrative skills that last a lifetime.",
+    description:
+      "Unlock imagination and narrative skills that last a lifetime.",
     level: "Beginner",
     category: "Communication",
     iconType: "book",
@@ -145,7 +151,8 @@ const programsData = [
   },
   {
     title: "Emotional Vocabulary",
-    description: "Name, understand, and manage emotions for stronger relationships.",
+    description:
+      "Name, understand, and manage emotions for stronger relationships.",
     level: "Beginner",
     category: "Emotional",
     iconType: "heart",
@@ -156,7 +163,8 @@ const programsData = [
   },
   {
     title: "Logical Reasoning",
-    description: "Structured thinking patterns that make complex problems simple.",
+    description:
+      "Structured thinking patterns that make complex problems simple.",
     level: "Intermediate",
     category: "Cognitive",
     iconType: "text-math",
@@ -347,13 +355,13 @@ function TestimonialsCarousel() {
                   className="flex-1 text-sm leading-relaxed"
                   style={{ color: "#374151", fontStyle: "italic" }}
                 >
-                  "{t.quote}"
+                  &quot;{t.quote}&quot;
                 </p>
 
                 {/* Author */}
                 <div className="flex items-center gap-3">
                   <div
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white shrink-0"
                     style={{
                       background: t.color,
                       fontFamily: "var(--font-nunito)",
@@ -386,7 +394,7 @@ function TestimonialsCarousel() {
       <div className="flex items-center justify-center gap-4 mt-8">
         <button
           onClick={scrollPrev}
-          className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:bg-[#F5C518] hover:border-[#F5C518]"
+          className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:bg-primary hover:border-primary"
           style={{ borderColor: "#E5E7EB" }}
           aria-label="Previous testimonial"
         >
@@ -411,7 +419,7 @@ function TestimonialsCarousel() {
 
         <button
           onClick={scrollNext}
-          className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:bg-[#F5C518] hover:border-[#F5C518]"
+          className="w-9 h-9 rounded-full border-2 flex items-center justify-center transition-all hover:bg-primary hover:border-primary"
           style={{ borderColor: "#E5E7EB" }}
           aria-label="Next testimonial"
         >
@@ -428,14 +436,18 @@ export default function HomePage() {
   const [activeJourneyStep, setActiveJourneyStep] = useState(steps[0].id);
   const [animatedStats, setAnimatedStats] = useState(trustStats.map(() => 0));
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [demoType, setDemoType] = useState<"attention" | "writing" | null>(null);
+  const [demoType, setDemoType] = useState<"attention" | "writing" | null>(
+    null,
+  );
   const [activeCategory, setActiveCategory] = useState("All Programs");
 
   const statsRef = useRef(null);
   const isStatsInView = useInView(statsRef, { once: true, amount: 0.5 });
+  const hasRunStats = useRef(false);
 
   useEffect(() => {
-    if (!isStatsInView) return;
+    if (!isStatsInView || hasRunStats.current) return;
+    hasRunStats.current = true;
 
     const duration = 1800;
     const frameMs = 24;
@@ -489,7 +501,7 @@ export default function HomePage() {
                     border: "1px solid #F5C518",
                   }}
                 >
-                  🌟 India's #1 Child Development Platform
+                  🌟 India&apos;s #1 Child Development Platform
                 </span>
               </motion.div>
 
@@ -525,8 +537,8 @@ export default function HomePage() {
                 style={{ color: "#6B7280", maxWidth: 480 }}
               >
                 Go Kids helps Indian parents discover, develop, and track their
-                child's full potential — beyond marks, beyond grades, beyond
-                limits.
+                child&apos;s full potential — beyond marks, beyond grades,
+                beyond limits.
               </motion.p>
 
               {/* CTA Buttons */}
@@ -630,7 +642,7 @@ export default function HomePage() {
                   repeat: Infinity,
                   ease: "easeInOut",
                 }}
-                className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3"
+                className="absolute -bottom-4 left-0 sm:-bottom-6 sm:-left-6 bg-white rounded-2xl shadow-xl p-4 flex items-center gap-3"
                 style={{ border: "1px solid #F3F4F6" }}
               >
                 <div
@@ -650,7 +662,7 @@ export default function HomePage() {
                     500+ Families
                   </p>
                   <p className="text-xs" style={{ color: "#6B7280" }}>
-                    Building tomorrow's leaders
+                    Building tomorrow&apos;s leaders
                   </p>
                 </div>
               </motion.div>
@@ -658,98 +670,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* ── 2. FOUR VERTICALS ────────────────────────────────────── */}
-      {/* <section id="about" className="py-20 bg-white scroll-mt-24">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <FadeInUp className="text-center mb-12">
-            <p
-              className="text-sm font-semibold uppercase tracking-wider mb-3"
-              style={{ color: "#2BBCB0", fontFamily: "var(--font-nunito)" }}
-            >
-              What We Offer
-            </p>
-            <h2
-              style={{
-                fontFamily: "var(--font-nunito)",
-                fontWeight: 800,
-                fontSize: "clamp(28px, 4vw, 42px)",
-                color: "#1A1A1A",
-              }}
-            >
-              Everything Your Child Needs
-            </h2>
-            <p
-              className="mt-3 text-base max-w-xl mx-auto"
-              style={{ color: "#6B7280" }}
-            >
-              A complete platform built for India's young learners — from early
-              explorers to future leaders.
-            </p>
-          </FadeInUp>
-
-          <StaggerContainer className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {verticals.map((v) => {
-              const Icon = v.icon;
-              return (
-                <StaggerItem key={v.id}>
-                  <motion.div
-                    whileHover={{ y: -6 }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                    className="bg-white rounded-2xl p-6 h-full flex flex-col group cursor-pointer"
-                    style={{
-                      border: "1px solid #F3F4F6",
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.05)",
-                      transition: "box-shadow 0.22s ease",
-                    }}
-                    onMouseEnter={(e) => {
-                      (e.currentTarget as HTMLElement).style.boxShadow =
-                        "0 16px 40px rgba(0,0,0,0.12)";
-                    }}
-                    onMouseLeave={(e) => {
-                      (e.currentTarget as HTMLElement).style.boxShadow =
-                        "0 2px 12px rgba(0,0,0,0.05)";
-                    }}
-                  >
-                    <div
-                      className="w-12 h-12 rounded-xl flex items-center justify-center mb-4"
-                      style={{ background: v.color }}
-                    >
-                      <Icon size={22} color="white" />
-                    </div>
-                    <h3
-                      className="text-lg font-bold mb-2"
-                      style={{
-                        fontFamily: "var(--font-nunito)",
-                        color: "#1A1A1A",
-                      }}
-                    >
-                      {v.title}
-                    </h3>
-                    <p
-                      className="text-sm leading-relaxed flex-1"
-                      style={{ color: "#6B7280" }}
-                    >
-                      {v.description}
-                    </p>
-                    <Link
-                      href={v.href}
-                      className="mt-4 inline-flex items-center gap-1 text-sm font-semibold transition-colors group-hover:gap-2"
-                      style={{
-                        color: v.color,
-                        fontFamily: "var(--font-nunito)",
-                        transition: "gap 0.2s ease",
-                      }}
-                    >
-                      Learn more <ArrowRight size={14} />
-                    </Link>
-                  </motion.div>
-                </StaggerItem>
-              );
-            })}
-          </StaggerContainer>
-        </div>
-      </section> */}
 
       {/* ── 3. HOW IT WORKS ──────────────────────────────────────── */}
       <section id="about" className="py-20" style={{ background: "#FAFAF8" }}>
@@ -778,7 +698,7 @@ export default function HomePage() {
             </div>
 
             <div className="mt-8 flex flex-col items-center gap-2">
-              <div className="relative inline-flex rounded-full p-1 bg-[#F3F4F6] border border-[#E5E7EB]">
+              <div className="relative inline-flex rounded-full p-1 bg-brand-grey border border-[#E5E7EB]">
                 <button
                   type="button"
                   onClick={() => setJourneyMode("full")}
@@ -791,7 +711,7 @@ export default function HomePage() {
                   {journeyMode === "full" && (
                     <motion.div
                       layoutId="journey-pill"
-                      className="absolute inset-0 bg-[#F5C518] rounded-full shadow-sm"
+                      className="absolute inset-0 bg-primary rounded-full shadow-sm"
                       transition={{
                         type: "spring",
                         stiffness: 400,
@@ -813,7 +733,7 @@ export default function HomePage() {
                   {journeyMode === "anywhere" && (
                     <motion.div
                       layoutId="journey-pill"
-                      className="absolute inset-0 bg-[#F5C518] rounded-full shadow-sm"
+                      className="absolute inset-0 bg-primary rounded-full shadow-sm"
                       transition={{
                         type: "spring",
                         stiffness: 400,
@@ -895,7 +815,7 @@ export default function HomePage() {
                         {step.title}
                       </h3>
                       <p
-                        className="text-sm leading-relaxed mt-1 mx-auto max-w-[230px]"
+                        className="text-sm leading-relaxed mt-1 mx-auto max-w-57.5"
                         style={{ color: "#6B7280" }}
                       >
                         {step.description}
@@ -970,7 +890,7 @@ export default function HomePage() {
                   boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="bg-white rounded-[2rem] p-8 h-full flex flex-col relative"
+                className="bg-white rounded-4xl p-8 h-full flex flex-col relative"
                 style={{
                   border: "1px solid #E5E7EB",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
@@ -992,7 +912,7 @@ export default function HomePage() {
                       viewBox="0 0 36 36"
                     >
                       <path
-                        className="text-[#F4845F]"
+                        className="text-[#F4845F"
                         strokeDasharray="73, 100"
                         d="M18 2.0845
                           a 15.9155 15.9155 0 0 1 0 31.831
@@ -1036,7 +956,7 @@ export default function HomePage() {
                 </div>
 
                 <div
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-6 mt-auto gap-4 relative z-10"
+                  className="flex flex-col lg:flex-row items-start lg:items-center justify-between pt-6 mt-auto gap-4 relative z-10"
                   style={{ borderTop: "1px solid #F3F4F6" }}
                 >
                   <div
@@ -1045,19 +965,19 @@ export default function HomePage() {
                   >
                     <Clock size={16} /> ~20 minutes
                   </div>
-                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                  <div className="flex flex-col lg:flex-row flex-wrap items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
                     <button
                       onClick={() => {
                         setDemoType("attention");
                         setIsDemoModalOpen(true);
                       }}
-                      className="px-6 py-2.5 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-gray-900 hover:text-gray-900 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md w-full sm:w-auto"
+                      className="px-6 py-2.5 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-gray-900 hover:text-gray-900 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md w-full lg:w-auto"
                     >
                       Demo Questions
                     </button>
                     <Link
                       href="/assessments"
-                      className="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gray-900 hover:bg-black transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md shadow-sm w-full sm:w-auto text-center"
+                      className="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gray-900 hover:bg-black transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md shadow-sm w-full lg:w-auto text-center"
                     >
                       Start Assessment
                     </Link>
@@ -1074,7 +994,7 @@ export default function HomePage() {
                   boxShadow: "0 12px 32px rgba(0,0,0,0.08)",
                 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="bg-white rounded-[2rem] p-8 h-full flex flex-col relative"
+                className="bg-white rounded-4xl p-8 h-full flex flex-col relative"
                 style={{
                   border: "1px solid #E5E7EB",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.06)",
@@ -1124,7 +1044,7 @@ export default function HomePage() {
                   style={{ color: "#6B7280" }}
                 >
                   Measure speed, accuracy, and style — see exactly where your
-                  child's writing needs a boost.
+                  child&apos;s writing needs a boost.
                 </p>
 
                 <div
@@ -1135,7 +1055,7 @@ export default function HomePage() {
                 </div>
 
                 <div
-                  className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-6 mt-auto gap-4 relative z-10"
+                  className="flex flex-col lg:flex-row items-start lg:items-center justify-between pt-6 mt-auto gap-4 relative z-10"
                   style={{ borderTop: "1px solid #F3F4F6" }}
                 >
                   <div
@@ -1144,19 +1064,19 @@ export default function HomePage() {
                   >
                     <Clock size={16} /> ~25 minutes
                   </div>
-                  <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+                  <div className="flex flex-col lg:flex-row flex-wrap items-center gap-3 w-full lg:w-auto justify-center lg:justify-end">
                     <button
                       onClick={() => {
                         setDemoType("writing");
                         setIsDemoModalOpen(true);
                       }}
-                      className="px-6 py-2.5 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-gray-900 hover:text-gray-900 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md w-full sm:w-auto"
+                      className="px-6 py-2.5 rounded-full text-sm font-bold border-2 border-gray-200 text-gray-600 bg-white hover:border-gray-900 hover:text-gray-900 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md w-full lg:w-auto"
                     >
                       Demo Questions
                     </button>
                     <Link
                       href="/assessments"
-                      className="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gray-900 hover:bg-black transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md shadow-sm w-full sm:w-auto text-center"
+                      className="px-6 py-2.5 rounded-full text-sm font-bold text-white bg-gray-900 hover:bg-black transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-md shadow-sm w-full lg:w-auto text-center"
                     >
                       Start Assessment
                     </Link>
@@ -1203,46 +1123,56 @@ export default function HomePage() {
                 marginBottom: 16,
               }}
             >
-              Skills that <span style={{ color: "#F4845F" }}>actually matter</span>
+              Skills that{" "}
+              <span style={{ color: "#F4845F" }}>actually matter</span>
             </h2>
-            <p className="text-base sm:text-lg max-w-2xl" style={{ color: "#6B7280" }}>
-              Eight research-backed programs designed for children ages 6–16.
+            <p
+              className="text-base sm:text-lg max-w-2xl"
+              style={{ color: "#6B7280" }}
+            >
+              Eight research-backed programs designed for children ages 6-16.
             </p>
           </FadeInUp>
 
           {/* Category Filter Tiles */}
           <FadeInUp className="flex flex-wrap items-center justify-center gap-3 mb-12">
-            {["All Programs", "Communication", "Cognitive", "Emotional"].map((cat) => {
-              const isActive = activeCategory === cat;
-              return (
-                <button
-                  key={cat}
-                  type="button"
-                  onClick={() => setActiveCategory(cat)}
-                  className="px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 border"
-                  style={{
-                    backgroundColor: isActive ? "#101828 " : "#FFFFFF",
-                    borderColor: isActive ? "#F4845F" : "#E5E7EB",
-                    color: isActive ? "#FFFFFF" : "#6B7280",
-                    fontFamily: "var(--font-nunito)",
-                    boxShadow: isActive
-                      ? "0 4px 12px rgba(244, 132, 95, 0.25)"
-                      : "none",
-                  }}
-                >
-                  {cat}
-                </button>
-              );
-            })}
+            {["All Programs", "Communication", "Cognitive", "Emotional"].map(
+              (cat) => {
+                const isActive = activeCategory === cat;
+                return (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setActiveCategory(cat)}
+                    className="px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 border"
+                    style={{
+                      backgroundColor: isActive ? "#101828 " : "#FFFFFF",
+                      borderColor: isActive ? "#F4845F" : "#E5E7EB",
+                      color: isActive ? "#FFFFFF" : "#6B7280",
+                      fontFamily: "var(--font-nunito)",
+                      boxShadow: isActive
+                        ? "0 4px 12px rgba(244, 132, 95, 0.25)"
+                        : "none",
+                    }}
+                  >
+                    {cat}
+                  </button>
+                );
+              },
+            )}
           </FadeInUp>
 
           {/* Cards Grid */}
-          <motion.div 
+          <motion.div
             layout
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
           >
             {programsData
-              .filter((prog) => activeCategory === "All Programs" || prog.category === activeCategory)
+              .filter(
+                (prog) =>
+                  activeCategory === "All Programs" ||
+                  prog.category === activeCategory,
+              )
               .map((prog) => {
                 return (
                   <motion.div
@@ -1250,10 +1180,10 @@ export default function HomePage() {
                     layout
                     whileHover={{ y: -6 }}
                     transition={{ type: "spring", stiffness: 280, damping: 20 }}
-                    className="rounded-[2rem] p-6 h-full flex flex-col justify-between"
+                    className="rounded-4xl p-6 h-full flex flex-col justify-between"
                     style={{
                       border: "1px solid #E5E7EB",
-                      boxShadow: prog.isPopular 
+                      boxShadow: prog.isPopular
                         ? "0 8px 24px rgba(0, 0, 0, 0.04)"
                         : "0 4px 20px rgba(0, 0, 0, 0.03)",
                       background: prog.isPopular ? "#FFF9F6" : "#FFFFFF",
@@ -1267,36 +1197,67 @@ export default function HomePage() {
                           className="w-10 h-10 rounded-xl flex items-center justify-center"
                           style={{ background: prog.iconBg }}
                         >
-                          {prog.iconType === "pencil" && <Pencil size={18} color={prog.iconColor} />}
-                          {prog.iconType === "mic" && <Mic2 size={18} color={prog.iconColor} />}
-                          {prog.iconType === "brain" && <Brain size={18} color={prog.iconColor} />}
-                          {prog.iconType === "book" && <BookOpen size={18} color={prog.iconColor} />}
-                          {prog.iconType === "heart" && <Heart size={18} color={prog.iconColor} />}
-                          {prog.iconType === "target" && <Target size={18} color={prog.iconColor} />}
+                          {prog.iconType === "pencil" && (
+                            <Pencil size={18} color={prog.iconColor} />
+                          )}
+                          {prog.iconType === "mic" && (
+                            <Mic2 size={18} color={prog.iconColor} />
+                          )}
+                          {prog.iconType === "brain" && (
+                            <Brain size={18} color={prog.iconColor} />
+                          )}
+                          {prog.iconType === "book" && (
+                            <BookOpen size={18} color={prog.iconColor} />
+                          )}
+                          {prog.iconType === "heart" && (
+                            <Heart size={18} color={prog.iconColor} />
+                          )}
+                          {prog.iconType === "target" && (
+                            <Target size={18} color={prog.iconColor} />
+                          )}
                           {prog.iconType === "text-abc" && (
-                            <span className="font-bold text-xs" style={{ color: prog.iconColor, fontFamily: "var(--font-nunito)" }}>
+                            <span
+                              className="font-bold text-xs"
+                              style={{
+                                color: prog.iconColor,
+                                fontFamily: "var(--font-nunito)",
+                              }}
+                            >
                               Abc
                             </span>
                           )}
                           {prog.iconType === "text-math" && (
-                            <span className="font-bold text-xs" style={{ color: prog.iconColor, fontFamily: "var(--font-nunito)" }}>
+                            <span
+                              className="font-bold text-xs"
+                              style={{
+                                color: prog.iconColor,
+                                fontFamily: "var(--font-nunito)",
+                              }}
+                            >
                               √x
                             </span>
                           )}
                         </div>
-                        
+
                         {prog.isPopular && (
                           <span
                             className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider"
                             style={{
-                              background: "linear-gradient(135deg, #FFEBE5 0%, #FFDFD5 100%)",
+                              background:
+                                "linear-gradient(135deg, #FFEBE5 0%, #FFDFD5 100%)",
                               color: "#E0533C",
                               border: "1px solid #FFC4B3",
                               boxShadow: "0 2px 8px rgba(224, 83, 60, 0.08)",
                               fontFamily: "var(--font-nunito)",
                             }}
                           >
-                            <Flame size={11} fill="#E0533C" color="#E0533C" className="animate-pulse" /> Most Popular
+                            <Flame
+                              size={11}
+                              fill="#E0533C"
+                              color="#E0533C"
+                              className="animate-pulse"
+                            />{" "}
+                            Most Popular
                           </span>
                         )}
                       </div>
@@ -1334,7 +1295,7 @@ export default function HomePage() {
                       >
                         {prog.level}
                       </span>
-                      
+
                       <Link
                         href="/workshops"
                         className="inline-flex items-center gap-1 text-xs font-bold transition-all hover:gap-1.5"
@@ -1413,7 +1374,7 @@ export default function HomePage() {
               >
                 <Link
                   href="/workshops"
-                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-full font-bold text-base text-white border-2 border-white hover:bg-white hover:text-[#1A1A1A] transition-all"
+                  className="inline-flex items-center justify-center px-7 py-3.5 rounded-full font-bold text-base text-white border-2 border-white hover:bg-white hover:text-brand-black transition-all"
                   style={{ fontFamily: "var(--font-nunito)" }}
                 >
                   View Schedule
@@ -1681,7 +1642,11 @@ export default function HomePage() {
       </section>
 
       {/* ── 7. STATS & TRUST ─────────────────────────────────────── */}
-      <section ref={statsRef} className="py-14" style={{ background: "#FAFAF8" }}>
+      <section
+        ref={statsRef}
+        className="py-14"
+        style={{ background: "#FAFAF8" }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeInUp>
             <div
@@ -1750,7 +1715,7 @@ export default function HomePage() {
           </FadeInUp>
         </div>
       </section>
-
+      <ChatWidget />
       {/* ── 7. CTA STRIP ─────────────────────────────────────────── */}
       <section
         className="relative py-20 overflow-hidden"
@@ -1824,7 +1789,7 @@ export default function HomePage() {
               >
                 <Link
                   href="/workshops"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold text-base transition-all border-2 border-[#1A1A1A] hover:bg-[#1A1A1A] hover:text-white"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-full font-bold text-base transition-all border-2 border-brand-black hover:bg-brand-black hover:text-white"
                   style={{
                     background: "white",
                     color: "#1A1A1A",

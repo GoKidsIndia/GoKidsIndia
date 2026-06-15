@@ -1,345 +1,392 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { motion, useInView } from "framer-motion";
-import { FadeInUp, StaggerContainer, StaggerItem } from "@/components/animations/MotionWrapper";
+import { motion } from "framer-motion";
+import {
+  FadeInUp,
+  StaggerContainer,
+  StaggerItem,
+} from "@/components/animations/MotionWrapper";
 import Link from "next/link";
 import { ArrowRight, TrendingDown, Brain, Zap } from "lucide-react";
+
+// ─── Module-level Chart.js import ─────────────────────────────────────────────
+// IMPORTANT: Must be at module scope, NOT inside useEffect.
+// Calling import() inside an effect creates a new dynamic chunk on every
+// component mount and every HMR cycle in Next.js dev — those chunks are held
+// by webpack's HMR runtime and never GC'd, causing the heap to grow to 8 GB.
+// A single module-level Promise is evaluated once per module load and reused.
+const _chartImport = import("chart.js/auto");
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Tab = "endurance" | "impulse" | "engagement";
 
 // ─── Endurance Line Chart ─────────────────────────────────────────────────────
+// Single useEffect([]) owns both IntersectionObserver and chart lifecycle.
+// This eliminates the two-effect chain (IO → setState → chart effect) which
+// caused an extra render and left a window where cleanup could miss the chart.
 function EnduranceChart() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.4 });
   const chartRef = useRef<unknown>(null);
 
   useEffect(() => {
-    if (!isInView || !canvasRef.current) return;
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
 
-    let Chart: unknown;
+    let isActive = true;
 
-    async function init() {
-      const mod = await import("chart.js/auto");
-      Chart = mod.default;
+    const observer = new IntersectionObserver(
+      async ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect(); // once: true — stop watching immediately
 
-      if (chartRef.current) {
-        (chartRef.current as { destroy: () => void }).destroy();
-      }
+        if (chartRef.current) return; // already created on a previous mount
 
-      const ctx = canvasRef.current!.getContext("2d");
-      if (!ctx) return;
+        const mod = await _chartImport;
+        if (!isActive) return; // unmounted while awaiting (first load only)
 
-      chartRef.current = new (Chart as new (...args: unknown[]) => unknown)(ctx, {
-        type: "line",
-        data: {
-          labels: ["0 min", "5 min", "10 min", "15 min", "20 min", "25 min", "30 min"],
-          datasets: [
-            {
-              label: "Expected Baseline",
-              data: [95, 92, 88, 85, 80, 78, 75],
-              borderColor: "#D1D5DB",
-              borderDash: [6, 4],
-              borderWidth: 2,
-              tension: 0.4,
-              pointRadius: 0,
-              fill: false,
+        const ctx = canvas.getContext("2d");
+        if (!ctx || !isActive) return;
+
+        chartRef.current = new (mod.default as new (...args: unknown[]) => unknown)(
+          ctx,
+          {
+            type: "line",
+            data: {
+              labels: ["0 min","5 min","10 min","15 min","20 min","25 min","30 min"],
+              datasets: [
+                {
+                  label: "Expected Baseline",
+                  data: [95, 92, 88, 85, 80, 78, 75],
+                  borderColor: "#D1D5DB",
+                  borderDash: [6, 4],
+                  borderWidth: 2,
+                  tension: 0.4,
+                  pointRadius: 0,
+                  fill: false,
+                },
+                {
+                  label: "Observed Focus",
+                  data: [94, 90, 75, 58, 45, 40, 38],
+                  borderColor: "#F5C518",
+                  backgroundColor: "rgba(245, 197, 24, 0.10)",
+                  borderWidth: 3,
+                  fill: true,
+                  tension: 0.4,
+                  pointBackgroundColor: "#F5C518",
+                  pointBorderColor: "#fff",
+                  pointBorderWidth: 2,
+                  pointRadius: 5,
+                  pointHoverRadius: 7,
+                },
+              ],
             },
-            {
-              label: "Observed Focus",
-              data: [94, 90, 75, 58, 45, 40, 38],
-              borderColor: "#F5C518",
-              backgroundColor: "rgba(245, 197, 24, 0.10)",
-              borderWidth: 3,
-              fill: true,
-              tension: 0.4,
-              pointBackgroundColor: "#F5C518",
-              pointBorderColor: "#fff",
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 1200, easing: "easeInOutQuart" },
-          plugins: {
-            legend: {
-              position: "top",
-              labels: {
-                boxWidth: 12,
-                usePointStyle: true,
-                color: "#6B7280",
-                font: { family: "Inter, sans-serif", size: 12 },
-                padding: 20,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              animation: { duration: 1200, easing: "easeInOutQuart" },
+              plugins: {
+                legend: {
+                  position: "top",
+                  labels: {
+                    boxWidth: 12,
+                    usePointStyle: true,
+                    color: "#6B7280",
+                    font: { family: "Inter, sans-serif", size: 12 },
+                    padding: 20,
+                  },
+                },
+                tooltip: {
+                  backgroundColor: "#1A1A1A",
+                  titleColor: "#F5C518",
+                  bodyColor: "#F3F4F6",
+                  padding: 12,
+                  cornerRadius: 10,
+                  callbacks: { label: (ctx: any) => ` ${ctx.dataset.label}: ${ctx.parsed.y}%` },
+                },
               },
-            },
-            tooltip: {
-              backgroundColor: "#1A1A1A",
-              titleColor: "#F5C518",
-              bodyColor: "#F3F4F6",
-              padding: 12,
-              cornerRadius: 10,
-              callbacks: {
-                label: (ctx: any) =>
-                  ` ${ctx.dataset.label}: ${ctx.parsed.y}%`,
+              scales: {
+                y: {
+                  beginAtZero: false, min: 30, max: 100,
+                  title: { display: true, text: "Focus Level (%)", color: "#9CA3AF", font: { size: 11 } },
+                  grid: { color: "#F3F4F6" },
+                  ticks: { color: "#9CA3AF", font: { size: 11 } },
+                },
+                x: {
+                  title: { display: true, text: "Time on Task", color: "#9CA3AF", font: { size: 11 } },
+                  grid: { display: false },
+                  ticks: { color: "#9CA3AF", font: { size: 11 } },
+                },
               },
             },
           },
-          scales: {
-            y: {
-              beginAtZero: false,
-              min: 30,
-              max: 100,
-              title: {
-                display: true,
-                text: "Focus Level (%)",
-                color: "#9CA3AF",
-                font: { size: 11 },
-              },
-              grid: { color: "#F3F4F6" },
-              ticks: { color: "#9CA3AF", font: { size: 11 } },
-            },
-            x: {
-              title: {
-                display: true,
-                text: "Time on Task",
-                color: "#9CA3AF",
-                font: { size: 11 },
-              },
-              grid: { display: false },
-              ticks: { color: "#9CA3AF", font: { size: 11 } },
-            },
-          },
-        },
-      });
-    }
+        );
+      },
+      { threshold: 0.4 },
+    );
 
-    init();
+    observer.observe(container);
 
     return () => {
+      isActive = false;
+      observer.disconnect(); // guaranteed cleanup — no leaked IO
       if (chartRef.current) {
         (chartRef.current as { destroy: () => void }).destroy();
+        chartRef.current = null;
       }
     };
-  }, [isInView]);
+  }, []); // empty deps: runs once on mount, cleanup on unmount
 
   return (
-    <div ref={containerRef} style={{ position: "relative", height: "260px", width: "100%" }}>
+    <div
+      ref={containerRef}
+      style={{ position: "relative", height: "260px", width: "100%" }}
+    >
       <canvas ref={canvasRef} />
     </div>
   );
 }
 
 // ─── Impact Radar Chart ───────────────────────────────────────────────────────
-function ImpactRadarChart() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.4 });
-  const chartRef = useRef<unknown>(null);
+// function ImpactRadarChart() {
+//   const canvasRef = useRef<HTMLCanvasElement>(null);
+//   const containerRef = useRef<HTMLDivElement>(null);
+//   const isInView = useInView(containerRef, { once: true, amount: 0.4 });
+//   const chartRef = useRef<unknown>(null);
 
-  useEffect(() => {
-    if (!isInView || !canvasRef.current) return;
+//   useEffect(() => {
+//     if (!isInView || !canvasRef.current) return;
 
-    async function init() {
-      const mod = await import("chart.js/auto");
-      const Chart = mod.default;
+//     let isActive = true;
 
-      if (chartRef.current) {
-        (chartRef.current as { destroy: () => void }).destroy();
-      }
+//     async function init() {
+//       const mod = await _chartImport;
+//       if (!isActive) return;
+//       if (chartRef.current) return; // already mounted — do not recreate
+//       const Chart = mod.default;
 
-      const ctx = canvasRef.current!.getContext("2d");
-      if (!ctx) return;
+//       const ctx = canvasRef.current!.getContext("2d");
+//       if (!ctx || !isActive) return;
 
-      chartRef.current = new Chart(ctx, {
-        type: "radar",
-        data: {
-          labels: [
-            "Digital Distractions",
-            "Sleep Deficit",
-            "Rote Learning",
-            "Nutrition",
-            "Home Routines",
-          ],
-          datasets: [
-            {
-              label: "Impact on Focus",
-              data: [90, 65, 85, 40, 75],
-              backgroundColor: "rgba(245, 197, 24, 0.18)",
-              borderColor: "#F5C518",
-              borderWidth: 2,
-              pointBackgroundColor: "#F5C518",
-              pointBorderColor: "#fff",
-              pointBorderWidth: 2,
-              pointRadius: 5,
-              pointHoverRadius: 7,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 1000 },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: "#1A1A1A",
-              titleColor: "#F5C518",
-              bodyColor: "#F3F4F6",
-              padding: 12,
-              cornerRadius: 10,
-              callbacks: {
-                label: (ctx: any) =>
-                  ` Severity: ${ctx.parsed.r}%`,
-              },
-            },
-          },
-          scales: {
-            r: {
-              min: 0,
-              max: 100,
-              angleLines: { color: "#F3F4F6" },
-              grid: { color: "#F3F4F6" },
-              pointLabels: {
-                color: "#6B7280",
-                font: { size: 11, family: "Inter, sans-serif" },
-              },
-              ticks: { display: false },
-            },
-          },
-        },
-      });
-    }
+//       chartRef.current = new Chart(ctx, {
+//         type: "radar",
+//         data: {
+//           labels: [
+//             "Digital Distractions",
+//             "Sleep Deficit",
+//             "Rote Learning",
+//             "Nutrition",
+//             "Home Routines",
+//           ],
+//           datasets: [
+//             {
+//               label: "Impact on Focus",
+//               data: [90, 65, 85, 40, 75],
+//               backgroundColor: "rgba(245, 197, 24, 0.18)",
+//               borderColor: "#F5C518",
+//               borderWidth: 2,
+//               pointBackgroundColor: "#F5C518",
+//               pointBorderColor: "#fff",
+//               pointBorderWidth: 2,
+//               pointRadius: 5,
+//               pointHoverRadius: 7,
+//             },
+//           ],
+//         },
+//         options: {
+//           responsive: true,
+//           maintainAspectRatio: false,
+//           animation: { duration: 1000 },
+//           plugins: {
+//             legend: { display: false },
+//             tooltip: {
+//               backgroundColor: "#1A1A1A",
+//               titleColor: "#F5C518",
+//               bodyColor: "#F3F4F6",
+//               padding: 12,
+//               cornerRadius: 10,
+//               callbacks: {
+//                 label: (ctx: any) => ` Severity: ${ctx.parsed.r}%`,
+//               },
+//             },
+//           },
+//           scales: {
+//             r: {
+//               min: 0,
+//               max: 100,
+//               angleLines: { color: "#F3F4F6" },
+//               grid: { color: "#F3F4F6" },
+//               pointLabels: {
+//                 color: "#6B7280",
+//                 font: { size: 11, family: "Inter, sans-serif" },
+//               },
+//               ticks: { display: false },
+//             },
+//           },
+//         },
+//       });
+//     }
 
-    init();
+//     init();
 
-    return () => {
-      if (chartRef.current) {
-        (chartRef.current as { destroy: () => void }).destroy();
-      }
-    };
-  }, [isInView]);
+//     return () => {
+//       isActive = false;
+//       if (chartRef.current) {
+//         (chartRef.current as { destroy: () => void }).destroy();
+//         chartRef.current = null;
+//       }
+//     };
+//   }, [isInView]);
 
-  return (
-    <div ref={containerRef} style={{ position: "relative", height: "260px", width: "100%" }}>
-      <canvas ref={canvasRef} />
-    </div>
-  );
-}
+//   return (
+//     <div
+//       ref={containerRef}
+//       style={{ position: "relative", height: "260px", width: "100%" }}
+//     >
+//       <canvas ref={canvasRef} />
+//     </div>
+//   );
+//} 
 
 // ─── Engagement Bar Chart ─────────────────────────────────────────────────────
 function EngagementBarChart() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isInView = useInView(containerRef, { once: true, amount: 0.4 });
   const chartRef = useRef<unknown>(null);
 
   useEffect(() => {
-    if (!isInView || !canvasRef.current) return;
+    const container = containerRef.current;
+    const canvas = canvasRef.current;
+    if (!container || !canvas) return;
 
-    async function init() {
-      const mod = await import("chart.js/auto");
-      const Chart = mod.default;
+    let isActive = true;
 
-      if (chartRef.current) {
-        (chartRef.current as { destroy: () => void }).destroy();
-      }
+    const observer = new IntersectionObserver(
+      async ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
 
-      const ctx = canvasRef.current!.getContext("2d");
-      if (!ctx) return;
+        if (chartRef.current) return;
 
-      chartRef.current = new Chart(ctx, {
-        type: "bar",
-        data: {
-          labels: ["Passive Reading", "Standard Lecture", "Interactive Q&A", "Gamified Practice"],
-          datasets: [
-            {
+        const mod = await _chartImport;
+        if (!isActive) return;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx || !isActive) return;
+
+        chartRef.current = new (mod.default as new (...args: unknown[]) => unknown)(ctx, {
+          type: "bar",
+          data: {
+            labels: ["Passive Reading","Standard Lecture","Interactive Q&A","Gamified Practice"],
+            datasets: [{
               label: "Minutes of Sustained Engagement",
               data: [8, 12, 22, 28],
-              backgroundColor: ["#94A3B8", "#CBD5E1", "#2BBCB0", "#F5C518"],
+              backgroundColor: ["#94A3B8","#CBD5E1","#2BBCB0","#F5C518"],
               borderRadius: 8,
               borderSkipped: false,
+            }],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: { duration: 1000, easing: "easeOutQuart" },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#1A1A1A",
+                titleColor: "#F5C518",
+                bodyColor: "#F3F4F6",
+                padding: 12,
+                cornerRadius: 10,
+                callbacks: { label: (ctx: any) => ` ${ctx.parsed.y} minutes engaged` },
+              },
             },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          animation: { duration: 1000, easing: "easeOutQuart" },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              backgroundColor: "#1A1A1A",
-              titleColor: "#F5C518",
-              bodyColor: "#F3F4F6",
-              padding: 12,
-              cornerRadius: 10,
-              callbacks: {
-                label: (ctx: any) =>
-                  ` ${ctx.parsed.y} minutes engaged`,
+            scales: {
+              y: {
+                beginAtZero: true, max: 35,
+                title: { display: true, text: "Minutes of Focus", color: "#9CA3AF", font: { size: 11 } },
+                grid: { color: "#F3F4F6" },
+                ticks: { color: "#9CA3AF", font: { size: 11 } },
+              },
+              x: {
+                grid: { display: false },
+                ticks: { color: "#6B7280", font: { size: 11 } },
               },
             },
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 35,
-              title: {
-                display: true,
-                text: "Minutes of Focus",
-                color: "#9CA3AF",
-                font: { size: 11 },
-              },
-              grid: { color: "#F3F4F6" },
-              ticks: { color: "#9CA3AF", font: { size: 11 } },
-            },
-            x: {
-              grid: { display: false },
-              ticks: { color: "#6B7280", font: { size: 11 } },
-            },
-          },
-        },
-      });
-    }
+        });
+      },
+      { threshold: 0.4 },
+    );
 
-    init();
+    observer.observe(container);
 
     return () => {
+      isActive = false;
+      observer.disconnect();
       if (chartRef.current) {
         (chartRef.current as { destroy: () => void }).destroy();
+        chartRef.current = null;
       }
     };
-  }, [isInView]);
+  }, []);
 
   return (
-    <div ref={containerRef} style={{ position: "relative", height: "260px", width: "100%" }}>
+    <div
+      ref={containerRef}
+      style={{ position: "relative", height: "260px", width: "100%" }}
+    >
       <canvas ref={canvasRef} />
     </div>
   );
 }
 
+// ─── Impulsivity Progress Bar — static data ───────────────────────────────────
+// Defined at module scope so the animate target objects are stable references.
+// Inline objects inside map() create new references every render, causing
+// Framer Motion to re-trigger animations unnecessarily.
+const IMPULSE_BARS = [
+  { label: "Ages 8–10",  pct: 78, color: "#F4845F", animateIn: { width: "78%" }, animateOut: { width: 0 } },
+  { label: "Ages 11–13", pct: 68, color: "#F5C518", animateIn: { width: "68%" }, animateOut: { width: 0 } },
+  { label: "Ages 14–16", pct: 55, color: "#2BBCB0", animateIn: { width: "55%" }, animateOut: { width: 0 } },
+] as const;
+
+// Hoisted transition — same object reference on every render
+const BAR_TRANSITION = { duration: 1, delay: 0.2, ease: "easeOut" } as const;
+
 // ─── Impulsivity Progress Bar ─────────────────────────────────────────────────
 function ImpulsivityVisual() {
   const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, amount: 0.5 });
+  const [isInView, setIsInView] = useState(false);
 
-  const bars = [
-    { label: "Ages 8–10", pct: 78, color: "#F4845F" },
-    { label: "Ages 11–13", pct: 68, color: "#F5C518" },
-    { label: "Ages 14–16", pct: 55, color: "#2BBCB0" },
-  ];
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   return (
-    <div ref={ref} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div
+      ref={ref}
+      style={{ display: "flex", flexDirection: "column", gap: 20 }}
+    >
       <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.6 }}>
-        Percentage of observed errors caused by impulsive action — not lack of understanding.
+        Percentage of observed errors caused by impulsive action — not lack of
+        understanding.
       </p>
-      {bars.map((b) => (
+      {IMPULSE_BARS.map((b) => (
         <div key={b.label}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
@@ -352,8 +399,8 @@ function ImpulsivityVisual() {
           <div style={{ height: 10, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
             <motion.div
               initial={{ width: 0 }}
-              animate={isInView ? { width: `${b.pct}%` } : { width: 0 }}
-              transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+              animate={isInView ? b.animateIn : b.animateOut}
+              transition={BAR_TRANSITION}
               style={{ height: "100%", background: b.color, borderRadius: 99 }}
             />
           </div>
@@ -367,13 +414,37 @@ function ImpulsivityVisual() {
 }
 
 // ─── Tab data ─────────────────────────────────────────────────────────────────
-const tabs: { id: Tab; label: string; icon: React.ElementType; color: string }[] = [
-  { id: "endurance", label: "Attention Endurance", icon: TrendingDown, color: "#F5C518" },
-  { id: "impulse",   label: "Impulse Control",     icon: Zap,           color: "#F4845F" },
-  { id: "engagement",label: "What Actually Works", icon: Brain,         color: "#2BBCB0" },
+const tabs: {
+  id: Tab;
+  label: string;
+  icon: React.ElementType;
+  color: string;
+}[] = [
+  {
+    id: "endurance",
+    label: "Attention Endurance",
+    icon: TrendingDown,
+    color: "#F5C518",
+  },
+  { id: "impulse", label: "Impulse Control", icon: Zap, color: "#F4845F" },
+  {
+    id: "engagement",
+    label: "What Actually Works",
+    icon: Brain,
+    color: "#2BBCB0",
+  },
 ];
 
-const tabMeta: Record<Tab, { headline: string; stat: string; statLabel: string; body: string; source: string }> = {
+const tabMeta: Record<
+  Tab,
+  {
+    headline: string;
+    stat: string;
+    statLabel: string;
+    body: string;
+    source: string;
+  }
+> = {
   endurance: {
     headline: "Children lose 42% of their focus after just 15 minutes",
     stat: "~42%",
@@ -409,7 +480,6 @@ export default function InsightsSection() {
       style={{ background: "#FAFAF8" }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         {/* ── Section Header ── */}
         <FadeInUp className="text-center mb-12">
           <p
@@ -429,18 +499,37 @@ export default function InsightsSection() {
           >
             The data behind why Go Kids exists
           </h2>
-          <p className="text-base max-w-2xl mx-auto" style={{ color: "#6B7280" }}>
-            India's children have the ability. What they lack is the structured environment to build
-            the cognitive skills that turn potential into consistent performance.
+          <p
+            className="text-base max-w-2xl mx-auto"
+            style={{ color: "#6B7280" }}
+          >
+            India&apos;s children have the ability. What they lack is the
+            structured environment to build the cognitive skills that turn
+            potential into consistent performance.
           </p>
         </FadeInUp>
 
         {/* ── 3 stat pills ── */}
         <StaggerContainer className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12">
           {[
-            { value: "~42%", label: "Attention drop after 15 mins of structured tasks", color: "#F5C518", bg: "#FFF8DC" },
-            { value: "68%",  label: "Of classroom errors caused by impulse, not ignorance", color: "#F4845F", bg: "#FFF0EB" },
-            { value: "3.5×", label: "Interactive >>> Passive learning for focus", color: "#2BBCB0", bg: "#E8F8F7" },
+            {
+              value: "~42%",
+              label: "Attention drop after 15 mins of structured tasks",
+              color: "#F5C518",
+              bg: "#FFF8DC",
+            },
+            {
+              value: "68%",
+              label: "Of classroom errors caused by impulse, not ignorance",
+              color: "#F4845F",
+              bg: "#FFF0EB",
+            },
+            {
+              value: "3.5×",
+              label: "Interactive >>> Passive learning for focus",
+              color: "#2BBCB0",
+              bg: "#E8F8F7",
+            },
           ].map((s) => (
             <StaggerItem key={s.value}>
               <div
@@ -462,7 +551,9 @@ export default function InsightsSection() {
                 >
                   {s.value}
                 </p>
-                <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5 }}>{s.label}</p>
+                <p style={{ fontSize: 13, color: "#6B7280", lineHeight: 1.5 }}>
+                  {s.label}
+                </p>
               </div>
             </StaggerItem>
           ))}
@@ -485,9 +576,7 @@ export default function InsightsSection() {
                   backgroundColor: active ? "#101828" : "#FFFFFF",
                   borderColor: active ? t.color : "#E5E7EB",
                   color: active ? "#FFFFFF" : "#6B7280",
-                  boxShadow: active
-                    ? `0 4px 12px ${t.color}40`
-                    : "none",
+                  boxShadow: active ? `0 4px 12px ${t.color}40` : "none",
                 }}
               >
                 <Icon size={15} />
@@ -520,11 +609,14 @@ export default function InsightsSection() {
               <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                 {/* Big stat */}
                 <div
-                  className="flex-shrink-0 rounded-2xl px-6 py-4 text-center"
+                  className="shrink-0 rounded-2xl px-6 py-4 text-center"
                   style={{
                     background:
-                      activeTab === "endurance" ? "#FFF8DC" :
-                      activeTab === "impulse" ? "#FFF0EB" : "#E8F8F7",
+                      activeTab === "endurance"
+                        ? "#FFF8DC"
+                        : activeTab === "impulse"
+                          ? "#FFF0EB"
+                          : "#E8F8F7",
                     minWidth: 110,
                   }}
                 >
@@ -534,14 +626,19 @@ export default function InsightsSection() {
                       fontWeight: 800,
                       fontSize: 36,
                       color:
-                        activeTab === "endurance" ? "#F5C518" :
-                        activeTab === "impulse" ? "#F4845F" : "#2BBCB0",
+                        activeTab === "endurance"
+                          ? "#F5C518"
+                          : activeTab === "impulse"
+                            ? "#F4845F"
+                            : "#2BBCB0",
                       lineHeight: 1,
                     }}
                   >
                     {meta.stat}
                   </p>
-                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>{meta.statLabel}</p>
+                  <p style={{ fontSize: 11, color: "#6B7280", marginTop: 4 }}>
+                    {meta.statLabel}
+                  </p>
                 </div>
 
                 {/* Headline + body */}
@@ -558,7 +655,14 @@ export default function InsightsSection() {
                   >
                     {meta.headline}
                   </h3>
-                  <p style={{ fontSize: 14, color: "#6B7280", lineHeight: 1.65, maxWidth: 600 }}>
+                  <p
+                    style={{
+                      fontSize: 14,
+                      color: "#6B7280",
+                      lineHeight: 1.65,
+                      maxWidth: 600,
+                    }}
+                  >
                     {meta.body}
                   </p>
                 </div>
@@ -577,10 +681,16 @@ export default function InsightsSection() {
               className="px-8 py-5 flex flex-col items-center sm:flex-row sm:items-center justify-between gap-4 text-center sm:text-left"
               style={{ borderTop: "1px solid #F3F4F6", background: "#FAFAF8" }}
             >
-              <p style={{ fontSize: 11, color: "#9CA3AF", fontStyle: "italic" }}>
+              <p
+                style={{ fontSize: 11, color: "#9CA3AF", fontStyle: "italic" }}
+              >
                 📊 {meta.source}
               </p>
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} className="flex justify-center w-full sm:w-auto">
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="flex justify-center w-full sm:w-auto"
+              >
                 <Link
                   href="/assessments"
                   className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold transition-all"
@@ -618,11 +728,20 @@ export default function InsightsSection() {
                   marginBottom: 6,
                 }}
               >
-                The market opportunity is <span style={{ color: "#F4845F" }}>now</span>.
+                The market opportunity is{" "}
+                <span style={{ color: "#F4845F" }}>now</span>.
               </p>
-              <p style={{ fontSize: 13, color: "#6B7280", maxWidth: 520, lineHeight: 1.6 }}>
-                280 million school-age children in India. Less than 2% have access to structured
-                cognitive skill-building. Go Kids is closing that gap — one child at a time.
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "#6B7280",
+                  maxWidth: 520,
+                  lineHeight: 1.6,
+                }}
+              >
+                280 million school-age children in India. Less than 2% have
+                access to structured cognitive skill-building. Go Kids is
+                closing that gap — one child at a time.
               </p>
             </div>
             <motion.div whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.97 }}>
@@ -641,7 +760,6 @@ export default function InsightsSection() {
             </motion.div>
           </div>
         </FadeInUp>
-
       </div>
     </section>
   );

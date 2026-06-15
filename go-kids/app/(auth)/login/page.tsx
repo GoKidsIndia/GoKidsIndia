@@ -8,8 +8,18 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  Loader2,
+  CheckCircle,
+  ArrowLeft,
+} from "lucide-react";
 import BrandLogo from "@/components/shared/BrandLogo";
+import GoogleButton from "@/components/shared/GoogleButton";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -22,13 +32,24 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const justVerified = searchParams.get("verified") === "true";
-  const callbackUrl = searchParams.get("callbackUrl") || "/parent/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<LoginFormData>({
+  // Kept for backward compatibility (GoogleButton handles the click).
+  const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/" });
+  };
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
   });
 
@@ -62,11 +83,18 @@ function LoginForm() {
       style={{ background: "#FAFAF8" }}
     >
       {/* Background shapes */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="animate-float absolute top-24 right-20 w-60 h-60 rounded-full opacity-20"
-          style={{ background: "#F5C518", filter: "blur(48px)" }} />
-        <div className="animate-float-delayed absolute bottom-16 left-16 w-48 h-48 rounded-full opacity-15"
-          style={{ background: "#F4845F", filter: "blur(40px)" }} />
+      <div
+        className="fixed inset-0 pointer-events-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <div
+          className="animate-float absolute top-24 right-20 w-60 h-60 rounded-full opacity-20"
+          style={{ background: "#F5C518", filter: "blur(48px)" }}
+        />
+        <div
+          className="animate-float-delayed absolute bottom-16 left-16 w-48 h-48 rounded-full opacity-15"
+          style={{ background: "#F4845F", filter: "blur(40px)" }}
+        />
       </div>
 
       <motion.div
@@ -77,7 +105,10 @@ function LoginForm() {
       >
         <div
           className="bg-white rounded-3xl p-8"
-          style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.1)", border: "1px solid #F3F4F6" }}
+          style={{
+            boxShadow: "0 20px 60px rgba(0,0,0,0.1)",
+            border: "1px solid #F3F4F6",
+          }}
         >
           {/* Back to Home */}
           <div className="mb-6">
@@ -113,7 +144,11 @@ function LoginForm() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 className="mb-5 px-4 py-3 rounded-xl flex items-center gap-2 text-sm font-medium"
-                style={{ background: "#E8F8F7", color: "#1A7A72", border: "1px solid #2BBCB0" }}
+                style={{
+                  background: "#E8F8F7",
+                  color: "#1A7A72",
+                  border: "1px solid #2BBCB0",
+                }}
               >
                 <CheckCircle size={16} />
                 Email verified! You can now log in.
@@ -129,21 +164,51 @@ function LoginForm() {
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
                 className="mb-5 px-4 py-3 rounded-xl text-sm font-medium"
-                style={{ background: "#FEF0EB", color: "#C0392B", border: "1px solid #F4845F" }}
+                style={{
+                  background: "#FEF0EB",
+                  color: "#C0392B",
+                  border: "1px solid #F4845F",
+                }}
               >
                 {serverError}
               </motion.div>
             )}
           </AnimatePresence>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+          {/* ── Google Sign-In ── */}
+          <GoogleButton
+            callbackUrl={callbackUrl}
+            isLoading={isGoogleLoading || isLoading}
+          />
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-2">
+            <div className="flex-1 h-px" style={{ background: "#E5E7EB" }} />
+            <span className="text-xs font-medium" style={{ color: "#9CA3AF" }}>
+              or continue with email
+            </span>
+            <div className="flex-1 h-px" style={{ background: "#E5E7EB" }} />
+          </div>
+
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-4"
+            noValidate
+          >
             {/* Email */}
             <div>
-              <label className="block text-sm font-semibold mb-1.5" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+              <label
+                className="block text-sm font-semibold mb-1.5"
+                style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+              >
                 Email Address
               </label>
               <div className="relative">
-                <Mail size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Mail
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("email")}
                   type="email"
@@ -153,22 +218,37 @@ function LoginForm() {
                   className="w-full pl-10 pr-4 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.email ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.email
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.email) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.email) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.email)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.email)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
               </div>
               {errors.email && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.email.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-semibold" style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}>
+                <label
+                  className="text-sm font-semibold"
+                  style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+                >
                   Password
                 </label>
                 <Link
@@ -180,7 +260,11 @@ function LoginForm() {
                 </Link>
               </div>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#9CA3AF" }} />
+                <Lock
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2"
+                  style={{ color: "#9CA3AF" }}
+                />
                 <input
                   {...register("password")}
                   type={showPassword ? "text" : "password"}
@@ -190,11 +274,21 @@ function LoginForm() {
                   className="w-full pl-10 pr-10 py-3 rounded-xl text-sm border outline-none transition-all"
                   style={{
                     background: "#FAFAF8",
-                    border: errors.password ? "1.5px solid #F4845F" : "1.5px solid #E5E7EB",
+                    border: errors.password
+                      ? "1.5px solid #F4845F"
+                      : "1.5px solid #E5E7EB",
                     color: "#1A1A1A",
                   }}
-                  onFocus={(e) => { if (!errors.password) (e.target as HTMLElement).style.border = "1.5px solid #F5C518"; }}
-                  onBlur={(e) => { if (!errors.password) (e.target as HTMLElement).style.border = "1.5px solid #E5E7EB"; }}
+                  onFocus={(e) => {
+                    if (!errors.password)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #F5C518";
+                  }}
+                  onBlur={(e) => {
+                    if (!errors.password)
+                      (e.target as HTMLElement).style.border =
+                        "1.5px solid #E5E7EB";
+                  }}
                 />
                 <button
                   type="button"
@@ -202,11 +296,17 @@ function LoginForm() {
                   className="absolute right-3.5 top-1/2 -translate-y-1/2"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff size={16} style={{ color: "#9CA3AF" }} /> : <Eye size={16} style={{ color: "#9CA3AF" }} />}
+                  {showPassword ? (
+                    <EyeOff size={16} style={{ color: "#9CA3AF" }} />
+                  ) : (
+                    <Eye size={16} style={{ color: "#9CA3AF" }} />
+                  )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>{errors.password.message}</p>
+                <p className="mt-1 text-xs" style={{ color: "#F4845F" }}>
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -226,9 +326,13 @@ function LoginForm() {
               }}
             >
               {isLoading ? (
-                <><Loader2 size={16} className="animate-spin" /> Logging in…</>
+                <>
+                  <Loader2 size={16} className="animate-spin" /> Logging in…
+                </>
               ) : (
-                <>Log In <ArrowRight size={16} /></>
+                <>
+                  Log In <ArrowRight size={16} />
+                </>
               )}
             </motion.button>
           </form>
@@ -236,7 +340,11 @@ function LoginForm() {
           {/* Register Link */}
           <p className="text-center text-sm mt-6" style={{ color: "#6B7280" }}>
             Don't have an account?{" "}
-            <Link href="/register" className="font-bold hover:underline" style={{ color: "#F5C518" }}>
+            <Link
+              href="/register"
+              className="font-bold hover:underline"
+              style={{ color: "#F5C518" }}
+            >
               Sign up free
             </Link>
           </p>
@@ -248,11 +356,20 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#FAFAF8" }}>
-        <Loader2 size={32} className="animate-spin" style={{ color: "#F5C518" }} />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div
+          className="min-h-screen flex items-center justify-center"
+          style={{ background: "#FAFAF8" }}
+        >
+          <Loader2
+            size={32}
+            className="animate-spin"
+            style={{ color: "#F5C518" }}
+          />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );

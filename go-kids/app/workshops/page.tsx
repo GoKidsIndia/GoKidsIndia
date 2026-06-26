@@ -121,7 +121,7 @@ function StatsBar({ totalWorkshops, totalEnrolled, avgRating, skillsCount }: Sta
         {stats.map((s) => (
           <div
             key={s.label}
-            className="bg-white rounded-xl sm:rounded-2xl flex flex-col items-center justify-center py-2.5 sm:py-5 px-1 sm:px-4 text-center border border-[#F3F4F6]"
+            className="bg-white rounded-xl sm:rounded-2xl flex flex-col items-center justify-center py-2.5 sm:py-5 px-1 sm:px-4 text-center border border-brand-grey"
             style={{
               boxShadow:
                 "0 10px 30px -10px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.02)",
@@ -174,7 +174,7 @@ export default async function WorkshopsPage() {
         avgRating={avgRating}
         skillsCount={skillsCount}
       />
-      <div id="workshops-grid" className="pt-8">
+      <div id="workshops-grid">
         <WorkshopsClient workshops={workshops} />
       </div>
     </main>

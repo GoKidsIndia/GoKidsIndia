@@ -611,7 +611,7 @@ export default function HomePage() {
               >
                 <motion.div
                   className="flex-1 sm:flex-initial"
-                  whileHover={{ scale: 1.04 }}
+                  // whileHover={{ scale: 1.04 }}
                   whileTap={{ scale: 0.97 }}
                 >
                   <Link
@@ -1357,7 +1357,7 @@ export default function HomePage() {
           <FadeInUp className="mt-12 flex justify-center">
             <Link
               href="/assessments"
-              className="text-base font-bold px-8 py-3.5 rounded-full flex items-center justify-center gap-2 transition-transform hover:scale-105 shadow-sm"
+              className="text-base font-bold px-8 py-3.5 rounded-full flex items-center justify-center gap-2 transition-transform hover:scale-101 shadow-sm"
               style={{
                 background: "#F5C518",
                 color: "#1A1A1A",
@@ -1626,7 +1626,7 @@ export default function HomePage() {
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <motion.div
-                whileHover={{ scale: 1.04 }}
+                whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
@@ -1637,7 +1637,7 @@ export default function HomePage() {
                 </Link>
               </motion.div>
               <motion.div
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
               >
                 <Link
@@ -1757,7 +1757,7 @@ export default function HomePage() {
                     14 parents online now
                   </p>
                   <motion.div
-                    whileHover={{ scale: 1.04 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Link
@@ -1862,7 +1862,7 @@ export default function HomePage() {
 
                 <div className="mt-6 flex justify-end">
                   <motion.div
-                    whileHover={{ scale: 1.04 }}
+                    whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.98 }}
                   >
                     <Link

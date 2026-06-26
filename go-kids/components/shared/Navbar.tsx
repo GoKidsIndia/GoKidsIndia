@@ -4,7 +4,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, X, LayoutDashboard, LogOut, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  LogOut,
+  ChevronDown,
+  ArrowRight,
+} from "lucide-react";
 import BrandLogo from "@/components/shared/BrandLogo";
 
 const navLinks = [
@@ -38,6 +45,14 @@ export default function Navbar() {
   const isLoggedIn = status === "authenticated" && !!session;
   const userName = session?.user?.name || "User";
   const initials = getInitials(userName);
+
+  const showGetStarted = ![
+    "/login",
+    "/register",
+    "/verify-otp",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(pathname);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 60);
@@ -75,17 +90,16 @@ export default function Navbar() {
   const linkColor = scrolled
     ? "#1A1A1A"
     : isDarkHero
-    ? "rgba(255,255,255,0.95)"
-    : "#1A1A1A";
+      ? "rgba(255,255,255,0.95)"
+      : "#1A1A1A";
 
-  const linkHoverClass = isDarkHero && !scrolled
-    ? "hover:text-[#F5C518]"
-    : "hover:text-[#2BBCB0]";
+  const linkHoverClass =
+    isDarkHero && !scrolled ? "hover:text-[#F5C518]" : "hover:text-[#2BBCB0]";
 
   return (
     <>
       <header
-        className={`fixed top-0 left-0 right-0 z-100 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
           scrolled
             ? "bg-white/80 backdrop-blur-md border-brand-grey shadow-md"
             : "bg-transparent"
@@ -191,19 +205,19 @@ export default function Navbar() {
                   </div>
                 )}
               </div>
-            ) : (
+            ) : showGetStarted ? (
               <Link
                 href="/login"
-                className={`text-sm font-semibold px-5 py-2 rounded-full transition-all duration-250 ${
+                className={`inline-flex gap-2 text-sm items-center font-extrabold px-5 py-2.5 rounded-xl border-1.5 transition-all duration-200 hover:scale-[1.01] active:scale-[0.98] ${
                   scrolled || !isDarkHero
-                    ? "bg-brand-black text-white hover:bg-[#1D1D1F]/90 hover:scale-[1.02] active:scale-[0.98] shadow-sm"
-                    : "bg-white text-brand-black hover:bg-white/90 hover:scale-[1.02] active:scale-[0.98] shadow-sm"
+                    ? "bg-primary/80 border-black text-brand-black/85 hover:shadow-[0_4px_15px_rgba(43,188,176,0.3)]"
+                    : "bg-white border-white text-brand-black hover:bg-teal hover:border-teal hover:text-white hover:shadow-[0_4px_15px_rgba(43,188,176,0.3)]"
                 }`}
-                style={{ fontFamily: "var(--font-heading)" }}
+                style={{ fontFamily: "var(--font-nunito)" }}
               >
-                Get started
+                Join Us <ArrowRight size={16} />
               </Link>
-            )}
+            ) : null}
           </div>
 
           {/* Mobile Hamburger */}
@@ -224,7 +238,7 @@ export default function Navbar() {
       {/* Mobile Drawer Overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-60 bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -232,7 +246,7 @@ export default function Navbar() {
 
       {/* Mobile Drawer */}
       <div
-        className={`fixed top-0 right-0 bottom-0 z-70 w-75 bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
+        className={`fixed top-0 right-0 bottom-0 z-50 w-80 bg-white shadow-2xl transform transition-transform duration-300 ease-out ${
           mobileOpen ? "translate-x-0" : "translate-x-full"
         }`}
         role="dialog"
@@ -328,16 +342,16 @@ export default function Navbar() {
                   Logout
                 </button>
               </>
-            ) : (
+            ) : showGetStarted ? (
               <Link
-                href="/register"
-                className="block text-center px-5 py-2.5 rounded-full bg-brand-black text-white font-semibold text-sm transition-all duration-200 hover:bg-brand-black/90"
-                style={{ fontFamily: "var(--font-heading)" }}
+                href="/login"
+                className="block text-center px-5 py-3 rounded-2xl bg-primary text-brand-black font-extrabold text-sm transition-all duration-200 hover:bg-primary-dark active:scale-[0.98] shadow-md hover:shadow-lg"
+                style={{ fontFamily: "var(--font-nunito)" }}
                 onClick={() => setMobileOpen(false)}
               >
                 Get started
               </Link>
-            )}
+            ) : null}
           </div>
         </nav>
       </div>

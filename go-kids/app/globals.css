@@ -188,9 +188,9 @@ h1, h2, h3, h4, h5, h6 {
   text-decoration: none;
 }
 .btn-primary:hover {
-  background-color: var(--color-primary-dark);
-  transform: scale(1.04);
-  box-shadow: 0 6px 24px rgba(245, 197, 24, 0.4);
+  /* background-color: var(--color-primary-dark); */
+  transform: scale(1.01);
+  /* box-shadow: 0 6px 24px rgba(245, 197, 24, 0.4); */
 }
 
 .btn-outline {

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,7 +13,6 @@ import {
   BookOpen,
   ClipboardList,
   Plus,
-  ArrowRight,
   ChevronRight,
   Shield,
   User,
@@ -73,7 +71,10 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
   useEffect(() => {
     const tab = searchParams.get("tab");
     if (tab && ["profile", "children", "workshops", "assessments"].includes(tab)) {
-      setActiveTab(tab);
+      const t = setTimeout(() => {
+        setActiveTab(tab);
+      }, 0);
+      return () => clearTimeout(t);
     }
   }, [searchParams]);
 
@@ -165,13 +166,14 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E7EB] pb-5">
         <div>
           <h1
-            className="text-3xl font-extrabold text-[#1A1A1A]"
+            className="text-3xl font-extrabold text-brand-black"
             style={{ fontFamily: "var(--font-nunito)" }}
           >
             Parent Hub
           </h1>
-          <p className="text-sm text-[#6B7280]">
-            Manage your account, view children profiles, and track workshops & talent assessments.
+          <p className="text-sm text-brand-grey-text">
+            Manage your account, view children profiles, and track workshops &
+            talent assessments.
           </p>
         </div>
       </div>
@@ -192,10 +194,13 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                 fontFamily: "var(--font-nunito)",
               }}
             >
-              <Icon size={16} style={{ color: isActive ? "#F5C518" : "#9CA3AF" }} />
+              <Icon
+                size={16}
+                style={{ color: isActive ? "#F5C518" : "#9CA3AF" }}
+              />
               {tab.label}
               {tab.id === "children" && childrenList.length > 0 && (
-                <span className="ml-1 px-1.5 py-0.5 rounded-full text-2xs bg-[#FFF9E6] text-[#D4A900]">
+                <span className="ml-1 px-1.5 py-0.5 rounded-full text-2xs bg-[#FFF9E6] text-primary-dark">
                   {childrenList.length}
                 </span>
               )}
@@ -218,18 +223,25 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
               className="space-y-6"
             >
               <div
-                className="relative bg-white rounded-3xl overflow-hidden border border-[#F3F4F6]"
+                className="relative bg-white rounded-3xl overflow-hidden border border-brand-grey"
                 style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}
               >
                 {/* Yellow banner strip */}
                 <div
                   className="h-32 w-full relative"
                   style={{
-                    background: "linear-gradient(135deg, #F5C518 0%, #FFE566 50%, #F5C518 100%)",
+                    background:
+                      "linear-gradient(135deg, #F5C518 0%, #FFE566 50%, #F5C518 100%)",
                   }}
                 >
-                  <div className="absolute top-4 right-8 w-24 h-24 rounded-full opacity-15" style={{ background: "#1A1A1A" }} />
-                  <div className="absolute -bottom-6 left-28 w-16 h-16 rounded-full opacity-10" style={{ background: "#1A1A1A" }} />
+                  <div
+                    className="absolute top-4 right-8 w-24 h-24 rounded-full opacity-15"
+                    style={{ background: "#1A1A1A" }}
+                  />
+                  <div
+                    className="absolute -bottom-6 left-28 w-16 h-16 rounded-full opacity-10"
+                    style={{ background: "#1A1A1A" }}
+                  />
                 </div>
 
                 <div className="px-6 pb-6">
@@ -273,7 +285,7 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
 
                     <button
                       onClick={() => setEditOpen(true)}
-                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold border-2 transition-all hover:bg-[#FFF9E6] hover:border-[#F5C518]"
+                      className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-sm font-bold border-2 transition-all hover:bg-[#FFF9E6] hover:border-primary"
                       style={{
                         borderColor: "#E5E7EB",
                         color: "#1A1A1A",
@@ -287,32 +299,45 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
 
                   <h2
                     className="text-2xl font-extrabold mb-1"
-                    style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+                    style={{
+                      color: "#1A1A1A",
+                      fontFamily: "var(--font-nunito)",
+                    }}
                   >
                     {profile.name}
                   </h2>
-                  <p className="text-sm mb-6 text-[#6B7280]">Parent &middot; Go Kids India Member</p>
+                  <p className="text-sm mb-6 text-brand-grey-text">
+                    Parent &middot; Go Kids India Member
+                  </p>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-[#F3F4F6]">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-4 border-t border-brand-grey">
                     <div className="space-y-1">
-                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">Email Address</p>
-                      <span className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
+                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">
+                        Email Address
+                      </p>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-brand-black">
                         <Mail size={15} style={{ color: "#2BBCB0" }} />
                         {profile.email}
                       </span>
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">Mobile Number</p>
-                      <span className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
+                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">
+                        Mobile Number
+                      </p>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-brand-black">
                         <Phone size={15} style={{ color: "#F4845F" }} />
-                        {profile.phone ? `+91 ${profile.phone}` : "Not provided"}
+                        {profile.phone
+                          ? `+91 ${profile.phone}`
+                          : "Not provided"}
                       </span>
                     </div>
 
                     <div className="space-y-1">
-                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">Member Since</p>
-                      <span className="flex items-center gap-2 text-sm font-semibold text-[#1A1A1A]">
+                      <p className="text-xs text-[#9CA3AF] uppercase font-bold tracking-wider">
+                        Member Since
+                      </p>
+                      <span className="flex items-center gap-2 text-sm font-semibold text-brand-black">
                         <Calendar size={15} style={{ color: "#F5C518" }} />
                         {formatDate(profile.createdAt)}
                       </span>
@@ -335,13 +360,22 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-nunito)" }}>
+                  <h2
+                    className="text-xl font-extrabold text-brand-black"
+                    style={{ fontFamily: "var(--font-nunito)" }}
+                  >
                     My Children ({childrenList.length})
                   </h2>
-                  <p className="text-xs text-[#6B7280]">Add, update, or remove child profiles to receive tailored insights.</p>
+                  <p className="text-xs text-brand-grey-text">
+                    Add, update, or remove child profiles to receive tailored
+                    insights.
+                  </p>
                 </div>
                 <button
-                  onClick={() => { setEditChild(null); setAddOpen(true); }}
+                  onClick={() => {
+                    setEditChild(null);
+                    setAddOpen(true);
+                  }}
                   className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold transition-all hover:shadow-md active:scale-95 cursor-pointer"
                   style={{
                     background: "#F5C518",
@@ -360,12 +394,27 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                   <div className="w-16 h-16 rounded-full flex items-center justify-center mb-4 bg-[#FFF9E6]">
                     <Users size={28} style={{ color: "#F5C518" }} />
                   </div>
-                  <h3 className="text-lg font-bold text-[#1A1A1A] mb-1" style={{ fontFamily: "var(--font-nunito)" }}>No children registered yet</h3>
-                  <p className="text-xs text-[#6B7280] max-w-sm mb-6">Create profiles for your children to unlock talent assessments and workshop registrations.</p>
+                  <h3
+                    className="text-lg font-bold text-brand-black mb-1"
+                    style={{ fontFamily: "var(--font-nunito)" }}
+                  >
+                    No children registered yet
+                  </h3>
+                  <p className="text-xs text-brand-grey-text max-w-sm mb-6">
+                    Create profiles for your children to unlock talent
+                    assessments and workshop registrations.
+                  </p>
                   <button
-                    onClick={() => { setEditChild(null); setAddOpen(true); }}
+                    onClick={() => {
+                      setEditChild(null);
+                      setAddOpen(true);
+                    }}
                     className="flex items-center gap-2 px-6 py-3 rounded-full text-sm font-bold cursor-pointer"
-                    style={{ background: "#F5C518", color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
+                    style={{
+                      background: "#F5C518",
+                      color: "#1A1A1A",
+                      fontFamily: "var(--font-nunito)",
+                    }}
                   >
                     <Plus size={16} /> Add First Child
                   </button>
@@ -377,7 +426,10 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                       key={child._id}
                       child={child}
                       index={i}
-                      onEdit={(c) => { setEditChild(c); setAddOpen(true); }}
+                      onEdit={(c) => {
+                        setEditChild(c);
+                        setAddOpen(true);
+                      }}
                       onDelete={(c) => setDeleteChild(c)}
                     />
                   ))}
@@ -397,20 +449,34 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-nunito)" }}>
+                <h2
+                  className="text-xl font-extrabold text-brand-black"
+                  style={{ fontFamily: "var(--font-nunito)" }}
+                >
                   Registered Workshops
                 </h2>
-                <p className="text-xs text-[#6B7280]">View schedule details and access credentials for your children&apos;s upcoming and past workshops.</p>
+                <p className="text-xs text-brand-grey-text">
+                  View schedule details and access credentials for your
+                  children&apos;s upcoming and past workshops.
+                </p>
               </div>
 
               {childrenList.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-3xl bg-white">
-                  <AlertCircle size={28} className="text-[#F4845F] mb-4" />
-                  <h3 className="text-lg font-bold text-[#1A1A1A] mb-1" style={{ fontFamily: "var(--font-nunito)" }}>Children profiles required</h3>
-                  <p className="text-xs text-[#6B7280] max-w-sm mb-6">Please add a child profile first in the &quot;My Children&quot; tab to register them for workshops.</p>
+                  <AlertCircle size={28} className="text-coral mb-4" />
+                  <h3
+                    className="text-lg font-bold text-brand-black mb-1"
+                    style={{ fontFamily: "var(--font-nunito)" }}
+                  >
+                    Children profiles required
+                  </h3>
+                  <p className="text-xs text-brand-grey-text max-w-sm mb-6">
+                    Please add a child profile first in the &quot;My
+                    Children&quot; tab to register them for workshops.
+                  </p>
                   <button
                     onClick={() => handleTabChange("children")}
-                    className="px-5 py-2.5 rounded-full text-sm font-bold bg-[#F5C518] text-[#1A1A1A] cursor-pointer"
+                    className="px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-brand-black cursor-pointer"
                     style={{ fontFamily: "var(--font-nunito)" }}
                   >
                     Manage Children
@@ -423,59 +489,85 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                     return (
                       <div
                         key={w.id}
-                        className="bg-white rounded-3xl border border-[#F3F4F6] overflow-hidden flex flex-col justify-between transition-all hover:shadow-md"
+                        className="bg-white rounded-3xl border border-brand-grey overflow-hidden flex flex-col justify-between transition-all hover:shadow-md"
                         style={{ borderLeft: `5px solid ${w.color}` }}
                       >
                         <div className="p-6 space-y-4">
                           {/* Top row */}
                           <div className="flex items-center justify-between">
-                            <span className="text-2xs font-bold px-2 py-0.5 rounded-full" style={{ background: w.bg, color: w.color }}>
+                            <span
+                              className="text-2xs font-bold px-2 py-0.5 rounded-full"
+                              style={{ background: w.bg, color: w.color }}
+                            >
                               {w.category}
                             </span>
                             <span
                               className={`text-2xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
-                                isUpcoming ? "bg-[#E8F8F7] text-[#1A7A72]" : "bg-gray-100 text-gray-600"
+                                isUpcoming
+                                  ? "bg-[#E8F8F7] text-[#1A7A72]"
+                                  : "bg-gray-100 text-gray-600"
                               }`}
                             >
-                              {isUpcoming && <span className="w-1.5 h-1.5 rounded-full bg-[#2BBCB0] animate-pulse" />}
+                              {isUpcoming && (
+                                <span className="w-1.5 h-1.5 rounded-full text-teal animate-pulse" />
+                              )}
                               {w.status}
                             </span>
                           </div>
 
                           {/* Title */}
                           <div>
-                            <h3 className="text-lg font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-nunito)" }}>
+                            <h3
+                              className="text-lg font-extrabold text-brand-black"
+                              style={{ fontFamily: "var(--font-nunito)" }}
+                            >
                               {w.title}
                             </h3>
-                            <p className="text-xs text-[#6B7280] mt-0.5">
-                              Registered Child: <span className="font-bold text-[#1A1A1A] capitalize">{w.childName}</span>
+                            <p className="text-xs text-brand-grey-text mt-0.5">
+                              Registered Child:{" "}
+                              <span className="font-bold text-brand-black capitalize">
+                                {w.childName}
+                              </span>
                             </p>
                           </div>
 
                           {/* Schedule info */}
-                          <div className="grid grid-cols-2 gap-3 bg-[#FAFAF8] p-3 rounded-2xl text-xs">
+                          <div className="grid grid-cols-2 gap-3 bg-brand-offwhite p-3 rounded-2xl text-xs">
                             <div>
-                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">Date</p>
-                              <p className="font-bold text-[#1A1A1A] mt-0.5">{w.date}</p>
+                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">
+                                Date
+                              </p>
+                              <p className="font-bold text-brand-black mt-0.5">
+                                {w.date}
+                              </p>
                             </div>
                             <div>
-                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">Time</p>
-                              <p className="font-bold text-[#1A1A1A] mt-0.5">{w.time}</p>
+                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">
+                                Time
+                              </p>
+                              <p className="font-bold text-brand-black mt-0.5">
+                                {w.time}
+                              </p>
                             </div>
                           </div>
                         </div>
 
                         {/* Bottom Row */}
-                        <div className="px-6 py-4 bg-[#FAFAF8] border-t border-[#F3F4F6] flex items-center justify-between text-xs">
-                          <p className="text-[#6B7280]">
-                            Instructor: <span className="font-bold text-[#1A1A1A]">{w.instructor}</span>
+                        <div className="px-6 py-4 bg-brand-offwhite border-t border-brand-grey flex items-center justify-between text-xs">
+                          <p className="text-brand-grey-text">
+                            Instructor:{" "}
+                            <span className="font-bold text-brand-black">
+                              {w.instructor}
+                            </span>
                           </p>
                           {isUpcoming ? (
-                            <button className="flex items-center gap-1 font-bold text-[#2BBCB0] hover:underline cursor-pointer">
+                            <button className="flex items-center gap-1 font-bold text-teal hover:underline cursor-pointer">
                               Join Meeting <ChevronRight size={14} />
                             </button>
                           ) : (
-                            <span className="text-[#9CA3AF] font-bold">Ended</span>
+                            <span className="text-[#9CA3AF] font-bold">
+                              Ended
+                            </span>
                           )}
                         </div>
                       </div>
@@ -497,20 +589,34 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-nunito)" }}>
+                <h2
+                  className="text-xl font-extrabold text-brand-black"
+                  style={{ fontFamily: "var(--font-nunito)" }}
+                >
                   Talent Assessments
                 </h2>
-                <p className="text-xs text-[#6B7280]">Track progress and download expert feedback reports for assessment tests taken by your children.</p>
+                <p className="text-xs text-brand-grey-text">
+                  Track progress and download expert feedback reports for
+                  assessment tests taken by your children.
+                </p>
               </div>
 
               {childrenList.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-3xl bg-white">
-                  <AlertCircle size={28} className="text-[#F4845F] mb-4" />
-                  <h3 className="text-lg font-bold text-[#1A1A1A] mb-1" style={{ fontFamily: "var(--font-nunito)" }}>Children profiles required</h3>
-                  <p className="text-xs text-[#6B7280] max-w-sm mb-6">Please add a child profile first in the &quot;My Children&quot; tab to access talent assessments.</p>
+                  <AlertCircle size={28} className="text-coral mb-4" />
+                  <h3
+                    className="text-lg font-bold text-brand-black mb-1"
+                    style={{ fontFamily: "var(--font-nunito)" }}
+                  >
+                    Children profiles required
+                  </h3>
+                  <p className="text-xs text-brand-grey-text max-w-sm mb-6">
+                    Please add a child profile first in the &quot;My
+                    Children&quot; tab to access talent assessments.
+                  </p>
                   <button
                     onClick={() => handleTabChange("children")}
-                    className="px-5 py-2.5 rounded-full text-sm font-bold bg-[#F5C518] text-[#1A1A1A] cursor-pointer"
+                    className="px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-brand-black cursor-pointer"
                     style={{ fontFamily: "var(--font-nunito)" }}
                   >
                     Manage Children
@@ -523,37 +629,51 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                     return (
                       <div
                         key={a.id}
-                        className="bg-white rounded-3xl border border-[#F3F4F6] p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-sm"
+                        className="bg-white rounded-3xl border border-brand-grey p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:shadow-sm"
                       >
                         <div className="flex items-start gap-4">
                           <div
                             className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
                             style={{ backgroundColor: a.bg }}
                           >
-                            <ClipboardList size={22} style={{ color: a.color }} />
+                            <ClipboardList
+                              size={22}
+                              style={{ color: a.color }}
+                            />
                           </div>
 
                           <div className="space-y-1">
                             <div className="flex flex-wrap items-center gap-2">
-                              <h3 className="font-extrabold text-base text-[#1A1A1A]" style={{ fontFamily: "var(--font-nunito)" }}>
+                              <h3
+                                className="font-extrabold text-base text-brand-black"
+                                style={{ fontFamily: "var(--font-nunito)" }}
+                              >
                                 {a.title}
                               </h3>
                               <span
                                 className={`text-3xs font-bold px-2 py-0.5 rounded-full ${
-                                  isReady ? "bg-[#E8F8F7] text-[#1A7A72]" : "bg-[#FFF9E6] text-[#D4A900] animate-pulse"
+                                  isReady
+                                    ? "bg-[#E8F8F7] text-[#1A7A72]"
+                                    : "bg-[#FFF9E6] text-primary-dark animate-pulse"
                                 }`}
                               >
                                 {a.status}
                               </span>
                             </div>
 
-                            <p className="text-xs text-[#6B7280]">
-                              Taken by: <span className="font-bold text-[#1A1A1A] capitalize">{a.childName}</span> &middot; Completed: {a.completedDate}
+                            <p className="text-xs text-brand-grey-text">
+                              Taken by:{" "}
+                              <span className="font-bold text-brand-black capitalize">
+                                {a.childName}
+                              </span>{" "}
+                              &middot; Completed: {a.completedDate}
                             </p>
 
-                            <p className="text-xs text-[#6B7280]">
+                            <p className="text-xs text-brand-grey-text">
                               Key Strength / Status:{" "}
-                              <span className={`font-semibold ${isReady ? "text-[#1A7A72]" : "text-[#D4A900]"}`}>
+                              <span
+                                className={`font-semibold ${isReady ? "text-[#1A7A72]" : "text-primary-dark"}`}
+                              >
                                 {a.result}
                               </span>
                             </p>
@@ -602,14 +722,19 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
 
       <ChildFormDialog
         open={addOpen}
-        onOpenChange={(o) => { setAddOpen(o); if (!o) setEditChild(null); }}
+        onOpenChange={(o) => {
+          setAddOpen(o);
+          if (!o) setEditChild(null);
+        }}
         editChild={editChild}
         onSuccess={editChild ? handleEdited : handleAdded}
       />
 
       <DeleteChildDialog
         open={!!deleteChild}
-        onOpenChange={(o) => { if (!o) setDeleteChild(null); }}
+        onOpenChange={(o) => {
+          if (!o) setDeleteChild(null);
+        }}
         child={deleteChild}
         onSuccess={handleDeleted}
       />

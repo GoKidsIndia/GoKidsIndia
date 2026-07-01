@@ -10,7 +10,8 @@ import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Parent Dashboard | Go Kids",
-  description: "Manage your Go Kids profile, children, workshops, and assessments.",
+  description:
+    "Manage your Go Kids profile, children, workshops, and assessments.",
 };
 
 export default async function ProfilePage() {
@@ -41,12 +42,12 @@ export default async function ProfilePage() {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center py-32 bg-[#FAFAF8] min-h-[50vh]">
-          <Loader2 size={32} className="animate-spin text-[#F5C518]" />
+        <div className="flex items-center justify-center py-32 bg-brand-offwhite min-h-[50vh]">
+          <Loader2 size={32} className="animate-spin text-primary" />
         </div>
       }
     >
-      <ProfilePageClient user={user} children={children} />
+      <ProfilePageClient user={user}>{children}</ProfilePageClient>
     </Suspense>
   );
 }

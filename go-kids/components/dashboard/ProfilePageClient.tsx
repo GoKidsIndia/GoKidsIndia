@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -35,9 +36,25 @@ interface UserProfile {
   createdAt: string;
 }
 
+interface DBAssessment {
+  _id: string;
+  type: string;
+  formData: {
+    childName: string;
+    ageBand: string;
+  };
+  results: {
+    overall: number;
+    level: string;
+    sublabel: string;
+  };
+  createdAt: string;
+}
+
 interface ProfilePageClientProps {
   user: UserProfile;
   children: ChildData[];
+  dbAssessments?: DBAssessment[];
 }
 
 function getInitials(name: string) {
@@ -52,7 +69,7 @@ function formatDate(dateStr: string) {
   });
 }
 
-export default function ProfilePageClient({ user, children }: ProfilePageClientProps) {
+export default function ProfilePageClient({ user, children, dbAssessments }: ProfilePageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("tab") || "profile";
@@ -87,58 +104,31 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
   };
 
   const initials = getInitials(profile.name);
-  const primaryChildName = childrenList[0]?.name || "your child";
 
-  // Dynamic Personalized Mock Data
-  const mockWorkshops = [
-    {
-      id: "w1",
-      title: "Coding & AI for Young Minds",
-      childName: primaryChildName,
-      date: "June 28, 2026",
-      time: "10:00 AM - 12:00 PM",
-      status: "Upcoming",
-      instructor: "Dr. Pallavi Modi",
-      category: "Technology & Logic",
-      color: "#2BBCB0",
-      bg: "#F0FAFA",
-    },
-    {
-      id: "w2",
-      title: "Public Speaking & Young Leaders",
-      childName: primaryChildName,
-      date: "May 10, 2026",
-      time: "4:00 PM - 5:30 PM",
-      status: "Completed",
-      instructor: "Rohit Sharma",
-      category: "Communication & Confidence",
-      color: "#F4845F",
-      bg: "#FEF0EB",
-    },
-  ];
-
-  const mockAssessments = [
-    {
-      id: "a1",
-      title: "Cognitive Strengths Assessment",
-      childName: primaryChildName,
-      completedDate: "June 02, 2026",
-      status: "Report Ready",
-      result: "Highly Analytical, Logic-Driven & Spatial thinker",
-      color: "#2BBCB0",
-      bg: "#F0FAFA",
-    },
-    {
-      id: "a2",
-      title: "Future Skills & Tech Aptitude",
-      childName: primaryChildName,
-      completedDate: "June 14, 2026",
-      status: "In Progress",
-      result: "Formulating insights and personalized recommendations...",
-      color: "#F5C518",
-      bg: "#FFF9E6",
-    },
-  ];
+  const allAssessments = (dbAssessments || []).map((db) => ({
+    id: db._id,
+    title: db.type === "attention-span" ? "Attention Span Assessment" : "Talent Assessment",
+    childName: db.formData.childName,
+    completedDate: new Date(db.createdAt).toLocaleDateString("en-IN", {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    }),
+    status: "Report Ready",
+    result: `${db.results.level} Level: ${db.results.sublabel} (Overall Score: ${db.results.overall}/100)`,
+    color:
+      db.results.level === "High"
+        ? "#2BBCB0"
+        : db.results.level === "Moderate"
+        ? "#F5C518"
+        : "#F4845F",
+    bg:
+      db.results.level === "High"
+        ? "#F0FAFA"
+        : db.results.level === "Moderate"
+        ? "#FFF9E6"
+        : "#FEF0EB",
+  }));
 
   // Handlers for child CRUD
   const handleAdded = (newChild: ChildData) => {
@@ -483,96 +473,23 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {mockWorkshops.map((w) => {
-                    const isUpcoming = w.status === "Upcoming";
-                    return (
-                      <div
-                        key={w.id}
-                        className="bg-white rounded-3xl border border-brand-grey overflow-hidden flex flex-col justify-between transition-all hover:shadow-md"
-                        style={{ borderLeft: `5px solid ${w.color}` }}
-                      >
-                        <div className="p-6 space-y-4">
-                          {/* Top row */}
-                          <div className="flex items-center justify-between">
-                            <span
-                              className="text-2xs font-bold px-2 py-0.5 rounded-full"
-                              style={{ background: w.bg, color: w.color }}
-                            >
-                              {w.category}
-                            </span>
-                            <span
-                              className={`text-2xs font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 ${
-                                isUpcoming
-                                  ? "bg-[#E8F8F7] text-[#1A7A72]"
-                                  : "bg-gray-100 text-gray-600"
-                              }`}
-                            >
-                              {isUpcoming && (
-                                <span className="w-1.5 h-1.5 rounded-full text-teal animate-pulse" />
-                              )}
-                              {w.status}
-                            </span>
-                          </div>
-
-                          {/* Title */}
-                          <div>
-                            <h3
-                              className="text-lg font-extrabold text-brand-black"
-                              style={{ fontFamily: "var(--font-nunito)" }}
-                            >
-                              {w.title}
-                            </h3>
-                            <p className="text-xs text-brand-grey-text mt-0.5">
-                              Registered Child:{" "}
-                              <span className="font-bold text-brand-black capitalize">
-                                {w.childName}
-                              </span>
-                            </p>
-                          </div>
-
-                          {/* Schedule info */}
-                          <div className="grid grid-cols-2 gap-3 bg-brand-offwhite p-3 rounded-2xl text-xs">
-                            <div>
-                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">
-                                Date
-                              </p>
-                              <p className="font-bold text-brand-black mt-0.5">
-                                {w.date}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-2xs text-[#9CA3AF] uppercase font-bold">
-                                Time
-                              </p>
-                              <p className="font-bold text-brand-black mt-0.5">
-                                {w.time}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Bottom Row */}
-                        <div className="px-6 py-4 bg-brand-offwhite border-t border-brand-grey flex items-center justify-between text-xs">
-                          <p className="text-brand-grey-text">
-                            Instructor:{" "}
-                            <span className="font-bold text-brand-black">
-                              {w.instructor}
-                            </span>
-                          </p>
-                          {isUpcoming ? (
-                            <button className="flex items-center gap-1 font-bold text-teal hover:underline cursor-pointer">
-                              Join Meeting <ChevronRight size={14} />
-                            </button>
-                          ) : (
-                            <span className="text-[#9CA3AF] font-bold">
-                              Ended
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-[32px] bg-white space-y-4 shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center text-2xl mx-auto">
+                    📚
+                  </div>
+                  <h3 className="text-lg font-bold text-brand-black" style={{ fontFamily: "var(--font-nunito)" }}>
+                    No registered workshops yet
+                  </h3>
+                  <p className="text-xs text-brand-grey-text max-w-sm">
+                    You haven&apos;t enrolled your children in any workshops yet. Explore our expert-led skill building workshops to get started.
+                  </p>
+                  <Link
+                    href="/workshops"
+                    className="inline-block px-6 py-3 rounded-full text-xs font-extrabold bg-primary text-brand-black transition-all hover:scale-105 shadow-xs"
+                    style={{ fontFamily: "var(--font-nunito)", textDecoration: "none" }}
+                  >
+                    Explore Workshops
+                  </Link>
                 </div>
               )}
             </motion.div>
@@ -622,9 +539,28 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                     Manage Children
                   </button>
                 </div>
+              ) : allAssessments.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-[32px] bg-white space-y-4 shadow-sm">
+                  <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-2xl mx-auto">
+                    🧠
+                  </div>
+                  <h3 className="text-lg font-bold text-brand-black" style={{ fontFamily: "var(--font-nunito)" }}>
+                    No assessments completed yet
+                  </h3>
+                  <p className="text-xs text-brand-grey-text max-w-sm">
+                    Assess your child&apos;s cognitive, focus, and writing skills to unlock personalized learning paths and reports.
+                  </p>
+                  <Link
+                    href="/assessments"
+                    className="inline-block px-6 py-3 rounded-full text-xs font-extrabold bg-primary text-brand-black transition-all hover:scale-105 shadow-xs"
+                    style={{ fontFamily: "var(--font-nunito)", textDecoration: "none" }}
+                  >
+                    Start Free Assessment
+                  </Link>
+                </div>
               ) : (
                 <div className="space-y-4">
-                  {mockAssessments.map((a) => {
+                  {allAssessments.map((a) => {
                     const isReady = a.status === "Report Ready";
                     return (
                       <div
@@ -684,7 +620,7 @@ export default function ProfilePageClient({ user, children }: ProfilePageClientP
                         <div className="shrink-0 flex items-center">
                           {isReady ? (
                             <button
-                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:shadow-md cursor-pointer"
+                              className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold transition-all hover:shadow-md cursor-pointer border-none"
                               style={{
                                 background: "#F5C518",
                                 color: "#1A1A1A",

@@ -81,7 +81,7 @@ function MentorsHero() {
               Journey
             </h1>
 
-            <p className="text-base sm:text-lg leading-relaxed text-gray-600 mb-8 max-w-lg">
+            <p className="text-base sm:text-lg leading-relaxed text-gray-600 mb-8 max-w-lg text-justify">
               Connect with India&apos;s top child psychologists, career coaches,
               and education specialists for personalised 1-on-1 sessions
               tailored to your child&apos;s unique goals and potential.
@@ -108,13 +108,13 @@ function MentorsHero() {
             <div className="flex flex-nowrap gap-2 sm:gap-3 w-full">
               <a
                 href="#mentors-grid"
-                className="btn-primary inline-flex items-center justify-center gap-1.5 !px-3.5 sm:!px-7 !py-2.5 sm:!py-3.5 !text-xs sm:!text-sm whitespace-nowrap shrink-0"
+                className="btn-primary inline-flex items-center justify-center gap-1.5 px-3.5! sm:px-7! py-2.5! sm:py-3.5! text-xs! sm:text-sm! whitespace-nowrap shrink-0"
               >
                 Find My Mentor <ArrowRight size={14} />
               </a>
               <Link
                 href="/become-a-mentor"
-                className="inline-flex items-center justify-center gap-1.5 !px-3.5 sm:!px-7 !py-2.5 sm:!py-3.5 rounded-full !text-xs sm:!text-sm font-bold transition-all bg-white text-brand-black border-[1.5px] border-[#D1D5DB] hover:border-primary hover:bg-[#FFFBEA] whitespace-nowrap shrink-0"
+                className="inline-flex items-center justify-center gap-1.5 px-3.5! sm:px-7! py-2.5! sm:py-3.5! rounded-full text-xs! sm:text-sm! font-bold transition-all bg-white text-brand-black border-[1.5px] border-[#D1D5DB] hover:border-primary hover:bg-[#FFFBEA] whitespace-nowrap shrink-0"
                 style={{ fontFamily: "var(--font-nunito)" }}
               >
                 Become a Mentor
@@ -189,7 +189,7 @@ function MentorsHero() {
               />
               {/* Floating badge — sessions today */}
               <div
-                className="absolute top-16 left-0 z-20 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-lg"
+                className="absolute top-1 -left-7 z-20 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-lg"
                 style={{ background: "white", border: "1.5px solid #F5C518" }}
               >
                 <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
@@ -207,7 +207,7 @@ function MentorsHero() {
               </div>
               {/* Floating badge — expert rating */}
               <div
-                className="absolute bottom-24 right-0 z-20 flex flex-col items-center px-4 py-3 rounded-2xl shadow-lg"
+                className="absolute bottom-2 right-0 z-20 flex flex-col items-center px-4 py-3 rounded-2xl shadow-lg"
                 style={{ background: "white", border: "1.5px solid #E5E7EB" }}
               >
                 <p className="text-[10px] font-bold text-gray-400 mb-1">
@@ -372,7 +372,6 @@ function BecomeMentorCTA() {
     </section>
   );
 }
-
 
 // ── FAQ ───────────────────────────────────────────────────────────────────────
 const FAQS = [

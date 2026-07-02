@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db/connect";
 import { User } from "@/lib/db/models/User";
 import { Child } from "@/lib/db/models/Child";
+import { Assessment } from "@/lib/db/models/Assessment";
 import ProfilePageClient from "@/components/dashboard/ProfilePageClient";
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
@@ -20,24 +21,30 @@ export default async function ProfilePage() {
 
   await connectDB();
 
-  // Fetch user profile from DB for latest data (including photoUrl)
-  const userDoc = await User.findById((session.user as { id?: string }).id)
+  const userId = (session.user as { id?: string }).id;
+
+  // Fetch user profile from DB for latest data
+  const userDoc = await User.findById(userId)
     .select("name email phone photoUrl provider createdAt")
     .lean();
 
   if (!userDoc) redirect("/login");
 
   // Fetch all children for the parent
-  const childrenDocs = await Child.find({
-    parentId: (session.user as { id?: string }).id,
-  })
+  const childrenDocs = await Child.find({ parentId: userId })
     .select("name dob grade school interests photoUrl")
+    .sort({ createdAt: -1 })
+    .lean();
+
+  // Fetch actual completed assessments from database for the parent
+  const assessmentDocs = await Assessment.find({ parentId: userId })
     .sort({ createdAt: -1 })
     .lean();
 
   // Serialise Mongoose docs to plain objects
   const user = JSON.parse(JSON.stringify(userDoc));
   const children = JSON.parse(JSON.stringify(childrenDocs));
+  const dbAssessments = JSON.parse(JSON.stringify(assessmentDocs));
 
   return (
     <Suspense
@@ -47,7 +54,7 @@ export default async function ProfilePage() {
         </div>
       }
     >
-      <ProfilePageClient user={user}>{children}</ProfilePageClient>
+      <ProfilePageClient user={user} children={children} dbAssessments={dbAssessments} />
     </Suspense>
   );
 }

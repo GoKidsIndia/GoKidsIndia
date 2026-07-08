@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Navbar from "@/components/shared/Navbar";
 import Footer from "@/components/shared/Footer";
 import { HelpCircle } from "lucide-react";
 import { DemoModal } from "@/components/shared/DemoModal";
+import AssessmentInfoModal from "@/components/assessments/AssessmentInfoModal";
+import { attentionSpanModalContent } from "@/components/assessments/attention-span/constants/modalContent";
 import {
   StaggerContainer,
   StaggerItem,
@@ -21,7 +24,7 @@ const ASSESSMENTS = [
     title: "Attention Span Assessment",
     description:
       "Evaluate your child's ability to sustain focus, filter distractions, and regulate impulses through a two-part digital and observational assessment.",
-    tags: ["~20 min", "Ages 8–16", "Digital + Parent Report"],
+    tags: ["~20 min", "Ages 8-16", "Digital + Parent Report"],
     tagBg: "#FFF3CC",
     tagColor: "#92650A",
     cta: "Start Assessment",
@@ -38,7 +41,7 @@ const ASSESSMENTS = [
     title: "Writing Ability Assessment",
     description:
       "Assess vocabulary range, sentence structure, creative expression, and age-appropriate writing skills through guided written tasks.",
-    tags: ["~25 min", "Ages 8–16", "Parent Report"],
+    tags: ["~25 min", "Ages 8-16", "Parent Report"],
     tagBg: "#E8F8F7",
     tagColor: "#0D7A73",
     cta: "Coming Soon",
@@ -50,8 +53,12 @@ const ASSESSMENTS = [
 ];
 
 export default function AssessmentsPage() {
+  const router = useRouter();
+  // DemoModal ("See Demo Questions")
   const [modalOpen, setModalOpen] = useState(false);
   const [activeAssessment, setActiveAssessment] = useState<"attention" | "writing" | null>(null);
+  // AssessmentInfoModal ("Start Assessment" → info + consent gate)
+  const [infoModalOpen, setInfoModalOpen] = useState(false);
 
   return (
     <div
@@ -94,7 +101,7 @@ export default function AssessmentsPage() {
               transition={{ delay: 0.2 }}
               className="text-sm sm:text-base leading-relaxed max-w-2xl mx-auto mb-6 sm:mb-8 text-gray-600 font-medium"
             >
-              Psychometric tools designed for Indian children aged 6–18,
+              Psychometric tools designed for Indian children aged 6-18,
               developed with child psychologists and education specialists. Free
               during our launch phase.
             </motion.p>
@@ -211,17 +218,17 @@ export default function AssessmentsPage() {
                     {/* CTA Button */}
                     <div className="pt-4">
                       {a.available && a.href ? (
-                        <Link
-                          href={a.href}
-                          className="block w-full text-center py-4 rounded-2xl font-extrabold text-sm transition-all bg-primary text-brand-black hover:bg-primary-dark shadow-xs"
+                        <button
+                          type="button"
+                          onClick={() => setInfoModalOpen(true)}
+                          className="block w-full text-center py-4 rounded-2xl font-extrabold text-sm transition-all bg-primary text-brand-black hover:bg-primary-dark shadow-xs border-none cursor-pointer"
                           style={{
                             fontFamily: "var(--font-heading)",
-                            textDecoration: "none",
                             boxShadow: "0 4px 14px rgba(245, 197, 24, 0.25)",
                           }}
                         >
                           {a.cta}
-                        </Link>
+                        </button>
                       ) : (
                         <div
                           className="w-full text-center py-4 rounded-2xl font-extrabold text-sm border border-dashed border-gray-200 text-gray-400"
@@ -397,11 +404,22 @@ export default function AssessmentsPage() {
 
       <Footer />
 
-      {/* Demo Modal containing the demo questions */}
+      {/* Demo Modal — "See Demo Questions" */}
       <DemoModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         assessmentType={activeAssessment}
+      />
+
+      {/* Info + Consent Modal — "Start Assessment" */}
+      <AssessmentInfoModal
+        isOpen={infoModalOpen}
+        onClose={() => setInfoModalOpen(false)}
+        onProceed={() => {
+          setInfoModalOpen(false);
+          router.push("/parent/assessments/attention-span");
+        }}
+        content={attentionSpanModalContent}
       />
     </div>
   );

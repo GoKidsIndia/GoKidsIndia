@@ -1,53 +1,48 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { AssessmentResults, CPTResult, buildInsights } from "../utils/scoring";
-import { AgeBand } from "../utils/bandConfig";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { AllScores } from "../utils/scoring";
+import { ProfileResult } from "../utils/profiles";
+import { CptRawData } from "../utils/scoring";
+import { Band } from "../utils/bandConfig";
 
-interface ResultsScreenProps {
-  results: AssessmentResults;
-  cptResult: CPTResult;
-  parentRaw: number;
+interface Props {
+  profile:   ProfileResult;
+  scores:    AllScores;
+  cptRaw:    CptRawData;
   childName: string;
-  ageBand: AgeBand;
-  parentAnswers: number[];
-  onSave: () => Promise<void>;
+  band:      Band;
+  onSave:    () => Promise<void>;
 }
 
-const LEVEL_STYLES = {
-  High: { bg: "#EAF3DE", color: "#3B6D11", border: "#B6D98A" },
-  Moderate: { bg: "#FAEEDA", color: "#854F0B", border: "#F5C89E" },
-  Low: { bg: "#FCEBEB", color: "#A32D2D", border: "#F4A0A0" },
-};
+function ScoreBar({ label, value, color, delay }: { label: string; value: number; color: string; delay: number }) {
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between">
+        <p className="text-xs font-semibold text-gray-600">{label}</p>
+        <p className="text-sm font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>{value}%</p>
+      </div>
+      <div className="h-3 rounded-full overflow-hidden" style={{ background: "#F3F4F6" }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.8, delay, ease: "easeOut" }}
+          className="h-full rounded-full"
+          style={{ background: color }}
+        />
+      </div>
+    </div>
+  );
+}
 
-const INSIGHT_COLORS = {
-  green: { bg: "#DCFCE7", color: "#15803D", icon: "✓" },
-  amber: { bg: "#FEF9C3", color: "#854D0E", icon: "⚠" },
-  red: { bg: "#FEE2E2", color: "#DC2626", icon: "✗" },
-};
-
-export function ResultsScreen({
-  results,
-  cptResult,
-  parentRaw,
-  childName,
-  onSave,
-}: ResultsScreenProps) {
+export function ResultsScreen({ profile, scores, cptRaw, childName, band, onSave }: Props) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const levelStyle = LEVEL_STYLES[results.level];
-  const insights = buildInsights(
-    cptResult.accuracyPct,
-    cptResult.hitRatePct,
-    cptResult.falseAlarmRatePct,
-    cptResult.falseAlarms,
-    parentRaw,
-    results.level,
-    cptResult.shapesShown
-  );
+  void cptRaw; void band;
 
   async function handleSave() {
     setSaving(true);
@@ -55,279 +50,196 @@ export function ResultsScreen({
     try {
       await onSave();
       setSaved(true);
-    } catch {
-      setSaveError("Failed to save. Please try again.");
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6 pb-4"
-    >
-      {/* Heading */}
-      <div className="text-center">
-        <h2
-          className="text-2xl sm:text-3xl font-extrabold text-brand-black"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          {childName}&apos;s Results
-        </h2>
-        <p className="text-sm mt-1 text-gray-500 font-semibold">
-          Attention Span Assessment completed successfully
-        </p>
-      </div>
+    <div className="space-y-6 py-2">
 
-      {/* Result band */}
+      {/* ── Profile Header Card ──────────────────────────────────────── */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.1, duration: 0.35 }}
-        className="rounded-[28px] p-6 border-2"
-        style={{
-          background: levelStyle.bg,
-          borderColor: levelStyle.border,
-        }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="rounded-2xl overflow-hidden"
+        style={{ background: `${profile.colour}15`, border: `2px solid ${profile.colour}40` }}
       >
-        <div className="flex items-center justify-between gap-4">
-          <div className="space-y-1">
-            <p
-              className="text-[10px] font-extrabold uppercase tracking-widest"
-              style={{ color: levelStyle.color, opacity: 0.8 }}
-            >
-              Focus Classification
-            </p>
-            <p
-              className="text-3xl font-black"
-              style={{
-                fontFamily: "var(--font-heading)",
-                color: levelStyle.color,
-              }}
-            >
-              {results.level}
-            </p>
-            <p
-              className="text-sm font-bold mt-1"
-              style={{ color: levelStyle.color }}
-            >
-              {results.sublabel}
-            </p>
-          </div>
-          <div
-            className="w-18 h-18 rounded-[22px] flex flex-col items-center justify-center bg-white shadow-xs shrink-0"
-            style={{ border: `1.5px solid ${levelStyle.border}` }}
-          >
-            <span className="text-[10px] font-extrabold uppercase tracking-wider text-gray-400">
-              Score
-            </span>
-            <span
-              className="text-2xl font-black mt-0.5"
-              style={{
-                color: levelStyle.color,
-                fontFamily: "var(--font-heading)",
-              }}
-            >
-              {results.overall}
-            </span>
-          </div>
+        {/* Colour strip */}
+        <div className="h-1" style={{ background: profile.colour }} />
+        <div className="p-6 text-center space-y-2">
+          <div className="text-5xl">{profile.emoji}</div>
+          <h2 className="text-2xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+            {profile.name}
+          </h2>
+          <p className="text-sm italic leading-relaxed" style={{ color: `${profile.colour}CC` }}>
+            {profile.tagline}
+          </p>
         </div>
       </motion.div>
 
-      {/* Score breakdown */}
-      <div className="rounded-[28px] p-6 space-y-5 bg-white border border-gray-150 shadow-xs">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-          Score Breakdown
-        </h3>
+      {/* ── Parent Message ───────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="rounded-2xl p-5"
+        style={{ background: "#FFFFFF", borderLeft: "4px solid #2BBCB0", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+      >
+        <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#2BBCB0] mb-2">For you, the parent:</p>
+        <p className="text-sm font-semibold text-gray-700 leading-relaxed">{profile.parentMessage}</p>
+      </motion.div>
 
-        {/* Part A bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-gray-700">
-              Part A — Digital Task{" "}
-              <span className="text-xs font-semibold text-gray-400">
-                (Weight 60%)
-              </span>
-            </span>
-            <span className="text-sm font-extrabold text-teal">
-              {results.cptScore} / 100
-            </span>
-          </div>
-          <div className="w-full h-3 rounded-full overflow-hidden bg-gray-100 border border-gray-100">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: "#2BBCB0" }}
-              initial={{ width: 0 }}
-              animate={{ width: `${results.cptScore}%` }}
-              transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-
-        {/* Part B bar */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-bold text-gray-700">
-              Part B — Parent Scale{" "}
-              <span className="text-xs font-semibold text-gray-400">
-                (Weight 40%)
-              </span>
-            </span>
-            <span className="text-sm font-extrabold text-coral">
-              {results.parentScore} / 100
-            </span>
-          </div>
-          <div className="w-full h-3 rounded-full overflow-hidden bg-gray-100 border border-gray-100">
-            <motion.div
-              className="h-full rounded-full"
-              style={{ background: "#F4845F" }}
-              initial={{ width: 0 }}
-              animate={{ width: `${results.parentScore}%` }}
-              transition={{ delay: 0.45, duration: 0.8, ease: "easeOut" }}
-            />
-          </div>
-        </div>
-
-        {/* Overall score */}
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <span className="text-sm font-extrabold text-brand-black">
-            Overall Score
-          </span>
-          <span
-            className="text-3xl font-black text-brand-black"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            {results.overall}{" "}
-            <span className="text-base font-bold text-gray-400">/ 100</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Key Insights */}
-      <div className="rounded-[28px] p-6 space-y-4 bg-white border border-gray-150 shadow-xs">
-        <h3 className="text-xs font-bold uppercase tracking-widest text-gray-400">
-          Key Insights
-        </h3>
-        <div className="space-y-4">
-          {insights.map((insight, i) => {
-            const style = INSIGHT_COLORS[insight.color];
-            return (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 + i * 0.1 }}
-                className="flex items-start gap-3.5"
-              >
-                <div
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-extrabold shrink-0 mt-0.5"
-                  style={{ background: style.bg, color: style.color }}
-                >
-                  {style.icon}
-                </div>
-                <div>
-                  <p className="text-sm font-extrabold text-brand-black">
-                    {insight.label}
-                  </p>
-                  <p className="text-xs mt-1 text-gray-500 font-semibold leading-relaxed">
-                    {insight.description}
-                  </p>
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Save button */}
-      <AnimatePresence mode="wait">
-        {saved ? (
-          <motion.div
-            key="saved"
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="w-full py-4 rounded-2xl text-center font-extrabold text-base border-none"
-            style={{
-              background: "#DCFCE7",
-              color: "#15803D",
-              border: "1.5px solid #22c55e",
-              fontFamily: "var(--font-heading)",
-            }}
-          >
-            ✅ Saved to your dashboard
-          </motion.div>
-        ) : (
-          <motion.button
-            key="save-btn"
-            onClick={handleSave}
-            disabled={saving}
-            whileHover={{ scale: saving ? 1 : 1.02 }}
-            whileTap={{ scale: 0.97 }}
-            className="w-full py-4 rounded-2xl font-extrabold text-base flex items-center justify-center gap-2 cursor-pointer border-none shadow-md"
-            style={{
-              background: saving ? "#FDE68A" : "#F5C518",
-              color: "#1A1A1A",
-              fontFamily: "var(--font-heading)",
-              opacity: saving ? 0.8 : 1,
-              boxShadow: "0 8px 24px rgba(245, 197, 24, 0.3)",
-            }}
-          >
-            {saving ? (
-              <>
-                <svg
-                  className="animate-spin w-4 h-4"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="#1A1A1A"
-                    strokeWidth="3"
-                    strokeOpacity="0.25"
-                  />
-                  <path
-                    d="M12 2a10 10 0 0 1 10 10"
-                    stroke="#1A1A1A"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                  />
-                </svg>
-                Saving…
-              </>
-            ) : (
-              "Save Results to Dashboard"
-            )}
-          </motion.button>
+      {/* ── Score Bars ───────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.15 }}
+        className="rounded-2xl p-5 space-y-4"
+        style={{ background: "#FFFFFF", border: "1.5px solid #F3F4F6", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+      >
+        <p className="text-xs font-extrabold uppercase tracking-wider text-gray-400">Score Breakdown</p>
+        <ScoreBar label="Part 1 — Digital Task"          value={scores.cptBaseScore}    color="#2BBCB0" delay={0.2} />
+        <ScoreBar label="Part 1 — Recovery Score"        value={scores.recoveryScore}   color="#4FC3F7" delay={0.35} />
+        {scores.selfReportScore !== null && (
+          <ScoreBar label="Part 2 — Self Report"           value={scores.selfReportScore} color="#F4845F" delay={0.45} />
         )}
-      </AnimatePresence>
+        <ScoreBar label="Part 3 — Parent Observations"   value={scores.parentScore}     color="#F4845F" delay={0.5} />
+        <ScoreBar label="Part 4 — Motivation Check"      value={scores.motivationScore} color="#F5C518" delay={0.65} />
 
-      {saveError && (
-        <p className="text-center text-sm font-bold text-red-500">
-          {saveError}
-        </p>
+        {/* Fatigue flag */}
+        {scores.fatigueFlag && (
+          <div className="rounded-xl px-3 py-2 flex items-start gap-2 mt-1" style={{ background: "#FEF0EB" }}>
+            <span className="text-sm shrink-0">⚠️</span>
+            <p className="text-xs font-semibold text-[#C0563A] leading-relaxed">
+              Attention fatigue detected — focus dropped significantly in Phase 3 vs Phase 1.
+            </p>
+          </div>
+        )}
+      </motion.div>
+
+      {/* ── Gap Flag ─────────────────────────────────────────────────── */}
+      {scores.gapFlag && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="rounded-2xl p-5"
+          style={{ background: "#FFFBEA", border: "2px solid rgba(245,197,24,0.5)" }}
+        >
+          <div className="flex items-start gap-3">
+            <span className="text-xl shrink-0">⚠️</span>
+            <div>
+              <p className="text-sm font-extrabold text-[#92700A] mb-1">Note for parents</p>
+              <p className="text-xs font-semibold text-gray-600 leading-relaxed">
+                {scores.gapDirection === "cpt_higher"
+                  ? `Your child performed well on the digital task but real-world attention challenges were observed. This is a classic ${profile.name} pattern — strong focus when engaged, harder to sustain on assigned tasks. The motivation score explains more.`
+                  : "Real-world observation scores are higher than the task score. This may reflect test anxiety or an unfamiliar format rather than a genuine attention gap. Watch for patterns at home."}
+              </p>
+            </div>
+          </div>
+        </motion.div>
       )}
 
-      {/* PDF placeholder */}
-      <div className="rounded-2xl px-5 py-4 text-xs font-semibold bg-brand-offwhite border border-gray-150 text-gray-500 flex gap-2.5 items-center shadow-2xs">
-        <span className="text-base">📄</span>
-        <p>
-          <span className="font-extrabold text-gray-700">
-            Your detailed PDF report will be ready soon.
-          </span>{" "}
-          We&apos;ll notify you when it&apos;s available to download.
+      {/* ── 5 Home Strategies ────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        className="rounded-2xl p-5 space-y-3"
+        style={{ background: "#FFFFFF", border: "1.5px solid #F3F4F6", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}
+      >
+        <p className="text-xs font-extrabold uppercase tracking-wider text-gray-400">5 Home Strategies for {childName}</p>
+        <div className="space-y-3">
+          {profile.strategies.map((strategy, i) => (
+            <div
+              key={i}
+              className="flex items-start gap-3 pl-3 py-2"
+              style={{ borderLeft: `3px solid ${profile.colour}` }}
+            >
+              <span className="text-xs font-extrabold shrink-0 mt-0.5" style={{ color: profile.colour, fontFamily: "var(--font-heading)" }}>
+                {i + 1}.
+              </span>
+              <p className="text-xs font-semibold text-gray-700 leading-[1.65]">{strategy}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── CTA strip ────────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
+        className="rounded-2xl p-5 text-center space-y-3"
+        style={{ background: "#FFFBEA", border: "1.5px solid rgba(245,197,24,0.4)" }}
+      >
+        <p className="text-sm font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+          Want to help {childName} build focus and attention skills?
+        </p>
+        <Link
+          href="/workshops"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full font-extrabold text-xs"
+          style={{ background: "#F5C518", color: "#1A1A1A", fontFamily: "var(--font-heading)" }}
+        >
+          Explore Go Kids Workshops →
+        </Link>
+      </motion.div>
+
+      {/* ── Save button ──────────────────────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.45 }}
+        className="space-y-3"
+      >
+        {!saved ? (
+          <motion.button
+            whileHover={{ scale: saving ? 1 : 1.02 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={handleSave}
+            disabled={saving}
+            className="w-full py-4 rounded-2xl font-extrabold text-sm"
+            style={{
+              background: saving ? "#F3F4F6" : "#1A1A1A",
+              color: saving ? "#9CA3AF" : "#FFFFFF",
+              fontFamily: "var(--font-heading)",
+            }}
+          >
+            {saving ? "Saving…" : "💾 Save Results to Dashboard"}
+          </motion.button>
+        ) : (
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="w-full py-4 rounded-2xl text-center font-extrabold text-sm"
+            style={{ background: "#D1FAE5", color: "#065F46", fontFamily: "var(--font-heading)" }}
+          >
+            ✅ Saved to your dashboard!
+          </motion.div>
+        )}
+
+        {saveError && (
+          <p className="text-xs text-red-500 text-center font-semibold">{saveError}</p>
+        )}
+
+        {/* PDF placeholder */}
+        <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ background: "#F3F4F6" }}>
+          <span className="text-lg">📄</span>
+          <p className="text-xs font-semibold text-gray-500 leading-relaxed">
+            PDF report coming soon — we&apos;ll notify you when it&apos;s ready.
+          </p>
+        </div>
+      </motion.div>
+
+      {/* ── Disclaimer ───────────────────────────────────────────────── */}
+      <div className="rounded-xl p-4" style={{ background: "#F3F4F6" }}>
+        <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
+          This report was generated by the Go Kids Attention Assessment — an independent tool built from observations across Go Kids workshops. It is not a clinically validated, medically approved, or standardised psychological assessment. Results are for personal understanding only and do not constitute a diagnosis or professional evaluation of any kind. No result should be used to make decisions about your child&apos;s education, health, or wellbeing without first speaking to a qualified professional. If you have concerns about your child&apos;s development, please seek advice from a licensed child psychologist or paediatrician.
         </p>
       </div>
-
-      {/* Disclaimer */}
-      <p className="text-[10px] text-center text-gray-400 leading-relaxed font-semibold">
-        Disclaimer: This assessment is a screening tool and not a clinical
-        diagnosis. Results should be interpreted by a qualified professional.
-      </p>
-    </motion.div>
+    </div>
   );
 }

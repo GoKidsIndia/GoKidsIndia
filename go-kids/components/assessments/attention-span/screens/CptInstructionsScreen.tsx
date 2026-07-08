@@ -1,138 +1,95 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Clock, Target, Info } from "lucide-react";
-import { AgeBand, BAND_CONFIG } from "../utils/bandConfig";
+import { Band, BAND_CONFIG } from "../utils/bandConfig";
 
-interface CptInstructionsScreenProps {
-  band: AgeBand;
+interface Props {
+  band: Band;
   childName: string;
   onStart: () => void;
 }
 
-export function CptInstructionsScreen({
-  band,
-  childName,
-  onStart,
-}: CptInstructionsScreenProps) {
+export function CptInstructionsScreen({ band, childName, onStart }: Props) {
   const config = BAND_CONFIG[band];
+  const totalMins = Math.round(config.totalSeconds / 60);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      {/* Progress header */}
-      <div>
-        <div className="flex justify-between text-xs mb-1.5 font-bold uppercase tracking-wider text-gray-500">
-          <span>Part A — Digital Task</span>
-          <span>10%</span>
-        </div>
-        <div
-          className="w-full rounded-full overflow-hidden bg-gray-100"
-          style={{ height: 6 }}
-        >
-          <motion.div
-            className="h-full rounded-full bg-primary"
-            initial={{ width: "0%" }}
-            animate={{ width: "10%" }}
-            transition={{ duration: 0.6, ease: "easeOut" }}
-          />
-        </div>
+    <div className="space-y-6 py-2">
+      {/* Part badge */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#E8F8F7] text-[#2BBCB0]" style={{ fontFamily: "var(--font-heading)" }}>
+          Part 1 of 4
+        </span>
+        <span className="text-xs text-gray-400 font-semibold">Digital Shape Task</span>
       </div>
 
       {/* Heading */}
-      <div className="space-y-1 text-center sm:text-left">
-        <h2
-          className="text-2xl font-extrabold text-brand-black"
-          style={{ fontFamily: "var(--font-heading)" }}
-        >
-          Part A: Digital Attention Task
+      <div>
+        <h2 className="text-2xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+          Hey {childName}! 👋
         </h2>
-        <p className="text-sm text-gray-500">
-          Read these instructions together with{" "}
-          <span className="font-extrabold text-brand-black">{childName}</span>
+        <p className="text-sm text-gray-500 font-semibold mt-1 leading-relaxed">
+          You&apos;re about to do a fun shape-spotting task. Here&apos;s how it works:
         </p>
       </div>
 
-      {/* Target shape display */}
-      <div className="flex flex-col items-center space-y-3">
-        <motion.div
-          whileHover={{ scale: 1.05 }}
-          className="w-36 h-36 rounded-[28px] flex items-center justify-center bg-white shadow-md border-2 border-teal relative overflow-hidden"
+      {/* Target shape */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-2xl p-6 text-center space-y-3"
+        style={{ background: "#E8F8F7", border: "2px solid #2BBCB0" }}
+      >
+        <p className="text-xs font-extrabold uppercase tracking-wider text-[#2BBCB0]">Your target shape</p>
+        <div
+          className="text-[80px] leading-none mx-auto"
+          style={{ color: "#1A1A1A", fontFamily: "monospace" }}
         >
-          {/* Subtle bg glow */}
-          <div className="absolute inset-0 bg-[#E8F8F7]/30 pointer-events-none" />
-          <span style={{ fontSize: 72, lineHeight: 1 }}>{config.target}</span>
-        </motion.div>
-        <p className="text-sm font-extrabold text-[#0D7A73]">
-          Target Symbol: {config.targetName}
+          {config.target}
+        </div>
+        <p className="text-lg font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+          The {config.targetName}
+        </p>
+        <p className="text-sm text-[#2BBCB0] font-extrabold">TAP this one. Ignore everything else.</p>
+      </motion.div>
+
+      {/* Rules */}
+      <div className="space-y-3">
+        {[
+          { icon: "👁️", text: "Shapes will appear one at a time on screen" },
+          { icon: "👆", text: `Tap only the ${config.targetName}; ignore all other shapes` },
+          { icon: "⚡", text: "Halfway through, you'll get a fun STAR BURST challenge!" },
+          { icon: "⏱️", text: `This part takes about ${totalMins} minutes total` },
+        ].map((rule, i) => (
+          <div key={i} className="flex items-start gap-3 p-3 rounded-xl" style={{ background: "#FAFAF8" }}>
+            <span className="text-xl shrink-0">{rule.icon}</span>
+            <p className="text-sm font-semibold text-gray-700 leading-relaxed">{rule.text}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Duration note */}
+      <div className="rounded-xl px-4 py-3 flex items-center gap-3" style={{ background: "#FFFBEA", border: "1px solid rgba(245,197,24,0.4)" }}>
+        <span className="text-lg">⏳</span>
+        <p className="text-xs font-semibold text-[#92700A] leading-relaxed">
+          <strong>Give the device to {childName}</strong> and let them sit comfortably. Parent can leave the room or sit quietly.
         </p>
       </div>
 
-      {/* Info rows */}
-      <div className="rounded-3xl p-5 space-y-4 bg-white border border-gray-100 shadow-sm">
-        <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#E8F8F7]">
-            <Clock size={18} className="text-teal" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-700">
-              Duration: {config.durLabel}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#FEF0EB]">
-            <Target size={18} className="text-coral" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-700">
-              Tap ONLY when you see the{" "}
-              <span className="text-coral font-extrabold">
-                {config.targetName}
-              </span>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-[#FFF8E1]">
-            <Info size={18} className="text-[#D97706]" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-gray-700">
-              Ignore all other shapes and letters
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Handover notice */}
-      <div className="rounded-[20px] p-4 flex items-start gap-3 bg-[#FFFBEB] border border-[#FDE68A]">
-        <span className="text-xl">📱</span>
-        <p className="text-sm font-semibold text-[#92400E] leading-relaxed">
-          Hand the device to your child after reading through this page
-          together.
-        </p>
-      </div>
-
-      {/* CTA */}
       <motion.button
-        onClick={onStart}
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full py-4 rounded-2xl text-base font-extrabold transition-all border-none cursor-pointer bg-primary text-brand-black shadow-md"
+        whileTap={{ scale: 0.97 }}
+        onClick={onStart}
+        className="w-full py-4 rounded-2xl font-extrabold text-sm"
         style={{
+          background: "#F5C518",
+          color: "#1A1A1A",
           fontFamily: "var(--font-heading)",
-          boxShadow: "0 8px 24px rgba(245, 197, 24, 0.25)",
+          boxShadow: "0 4px 16px rgba(245,197,24,0.35)",
         }}
       >
-        I understand — Start Task
+        I understand. Start Task 🚀
       </motion.button>
-    </motion.div>
+    </div>
   );
 }

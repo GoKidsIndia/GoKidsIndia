@@ -1,199 +1,120 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CPTResult } from "../utils/scoring";
+import { Band } from "../utils/bandConfig";
+import { CptRawData } from "../utils/scoring";
 
-interface CptDoneScreenProps {
-  cptResult: CPTResult;
+interface Props {
+  band: Band;
+  childName: string;
+  cptRaw: CptRawData;
   onNext: () => void;
+  nextLabel: string; // "Hand to parent — Part C" or "Hand back to childName — Part B"
 }
 
-function StatPill({
-  emoji,
-  label,
-  value,
-  bg,
-  color,
-  delay,
-}: {
-  emoji: string;
-  label: string;
-  value: string | number;
-  bg: string;
-  color: string;
-  delay: number;
-}) {
+function Stat({ label, value }: { label: string; value: string | number }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.3 }}
-      className="flex items-center gap-3 px-4 py-3.5 rounded-2xl"
-      style={{ background: bg }}
-    >
-      <span className="text-xl shrink-0">{emoji}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-xs font-bold text-gray-500">{label}</p>
-        <p
-          className="text-lg font-black"
-          style={{ color, fontFamily: "var(--font-heading)" }}
-        >
-          {value}
-        </p>
-      </div>
-    </motion.div>
+    <div className="text-center py-3 px-2 rounded-xl" style={{ background: "#FAFAF8" }}>
+      <p className="text-xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+        {value}
+      </p>
+      <p className="text-[10px] text-gray-400 font-semibold mt-0.5 leading-tight">{label}</p>
+    </div>
   );
 }
 
-export function CptDoneScreen({ cptResult, onNext }: CptDoneScreenProps) {
-  const { shapesShown, hits, misses, falseAlarms, accuracyPct } = cptResult;
-
-  const accuracyStyle =
-    accuracyPct >= 85
-      ? { emoji: "🌟", label: "Excellent!", bg: "linear-gradient(135deg,#F0FDF4,#DCFCE7)", color: "#15803D", ring: "#22c55e" }
-      : accuracyPct >= 70
-      ? { emoji: "👍", label: "Good job!", bg: "linear-gradient(135deg,#FFFBEB,#FEF9C3)", color: "#854D0E", ring: "#F5C518" }
-      : accuracyPct >= 55
-      ? { emoji: "💪", label: "Keep trying!", bg: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", color: "#9A3412", ring: "#FB923C" }
-      : { emoji: "🤗", label: "Nice effort!", bg: "linear-gradient(135deg,#FEF2F2,#FEE2E2)", color: "#991B1B", ring: "#EF4444" };
+export function CptDoneScreen({ band, childName, cptRaw, onNext, nextLabel }: Props) {
+  void band; // may be used for styling future improvements
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="space-y-6"
-    >
-      {/* Hero check */}
-      <div className="flex flex-col items-center gap-3 pt-2">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 300,
-            damping: 18,
-            delay: 0.1,
-          }}
-          className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold bg-[#E8F8F7] border-[3px] border-teal"
-          style={{ color: "#2BBCB0" }}
-        >
-          ✓
-        </motion.div>
-        <div className="text-center">
-          <h2
-            className="text-2xl font-extrabold text-brand-black"
-            style={{ fontFamily: "var(--font-heading)" }}
-          >
-            Part A Complete! ✅
-          </h2>
-          <p className="text-sm mt-1 text-gray-500 font-semibold">
-            Great job! Here&apos;s how your child performed.
-          </p>
-        </div>
-      </div>
-
-      {/* Big accuracy card */}
+    <div className="space-y-5 py-2">
+      {/* Celebration header */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.15, duration: 0.35 }}
-        className="rounded-3xl p-6 flex items-center justify-between gap-4"
-        style={{
-          background: accuracyStyle.bg,
-          border: `2px solid ${accuracyStyle.ring}40`,
-        }}
+        initial={{ scale: 0.5, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        className="text-center space-y-2"
       >
-        <div>
-          <p
-            className="text-xs font-extrabold uppercase tracking-widest"
-            style={{ color: accuracyStyle.color, opacity: 0.7 }}
-          >
-            Focus Score
-          </p>
-          <p
-            className="text-5xl font-black mt-1"
-            style={{
-              color: accuracyStyle.color,
-              fontFamily: "var(--font-heading)",
-            }}
-          >
-            {accuracyPct}%
-          </p>
-          <p
-            className="text-sm font-bold mt-1"
-            style={{ color: accuracyStyle.color }}
-          >
-            {accuracyStyle.label}
-          </p>
-        </div>
-        <span className="text-5xl shrink-0">{accuracyStyle.emoji}</span>
+        <div className="text-6xl">✅</div>
+        <h2 className="text-2xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+          Part 1 Complete!
+        </h2>
+        <p className="text-sm text-gray-500 font-semibold">
+          Great work, {childName}! Here&apos;s what we measured:
+        </p>
       </motion.div>
 
-      {/* Simple friendly stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <StatPill
-          emoji="👁️"
-          label="Shapes seen"
-          value={shapesShown}
-          bg="#F3F4F6"
-          color="#1A1A1A"
-          delay={0.2}
-        />
-        <StatPill
-          emoji="✅"
-          label="Correct taps"
-          value={hits}
-          bg="#F0FDF4"
-          color="#15803D"
-          delay={0.25}
-        />
-        <StatPill
-          emoji="⏱️"
-          label="Missed targets"
-          value={misses}
-          bg="#FFFBEB"
-          color="#92400E"
-          delay={0.3}
-        />
-        <StatPill
-          emoji="❌"
-          label="Wrong taps"
-          value={falseAlarms}
-          bg="#FEF2F2"
-          color="#991B1B"
-          delay={0.35}
-        />
-      </div>
-
-      {/* Hand-off banner */}
-      <div className="rounded-2xl p-5 flex gap-3.5 items-start bg-[#E8F8F7]/60 border border-teal/30">
-        <span className="text-2xl">👨‍👩‍👧</span>
+      {/* Stats card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+        className="rounded-2xl p-5 space-y-4 border border-gray-100 shadow-sm"
+        style={{ background: "#FFFFFF" }}
+      >
+        {/* Phase 1 */}
         <div>
-          <p className="text-sm font-bold text-[#0D7A73]">
-            Hand the device back to the parent
-          </p>
-          <p className="text-xs mt-1 text-gray-600 leading-relaxed font-semibold">
-            The child&apos;s part is complete. The next section is a short
-            questionnaire for a parent or guardian.
-          </p>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#2BBCB0] mb-2">Phase 1 — Baseline</p>
+          <div className="grid grid-cols-3 gap-2">
+            <Stat label="Shapes shown" value={cptRaw.phase1Targets} />
+            <Stat label="Correct hits" value={cptRaw.phase1Hits} />
+            <Stat label="Hit rate" value={`${Math.round(cptRaw.phase1HitRatePct)}%`} />
+          </div>
         </div>
-      </div>
+
+        {/* Burst */}
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#F5C518] mb-2">Star Burst ⚡</p>
+          <div className="grid grid-cols-2 gap-2">
+            <Stat label="Stars tapped" value={cptRaw.burstStarsTapped} />
+            <Stat label="Total stars" value={cptRaw.burstStarsTotal} />
+          </div>
+        </div>
+
+        {/* Phase 3 */}
+        <div>
+          <p className="text-[10px] font-extrabold uppercase tracking-wider text-[#F4845F] mb-2">Phase 3 — Endurance</p>
+          <div className="grid grid-cols-3 gap-2">
+            <Stat label="Shapes shown" value={cptRaw.phase3Targets} />
+            <Stat label="Correct hits" value={cptRaw.phase3Hits} />
+            <Stat label="Hit rate" value={`${Math.round(cptRaw.phase3HitRatePct)}%`} />
+          </div>
+        </div>
+
+        {/* Fatigue indicator */}
+        {cptRaw.totalTargets > 0 && (
+          <div className="pt-2 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <p className="text-xs font-semibold text-gray-400">Focus trend (Phase 1 → Phase 3)</p>
+              <p className="text-xs font-extrabold" style={{
+                color: cptRaw.fatigueIndex >= 0 ? "#16a34a" : cptRaw.fatigueIndex >= -15 ? "#F5C518" : "#E24B4A"
+              }}>
+                {cptRaw.fatigueIndex >= 0 ? "↑ Improving" : cptRaw.fatigueIndex >= -15 ? "→ Stable" : "↓ Fading"}
+              </p>
+            </div>
+          </div>
+        )}
+      </motion.div>
+
+      {/* No scores shown — just raw stats (full profile at end) */}
+      <p className="text-[11px] text-center text-gray-400 font-semibold">
+        Full results and your child&apos;s attention profile will appear at the end.
+      </p>
 
       <motion.button
-        onClick={onNext}
         whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full py-4 rounded-2xl font-extrabold text-base cursor-pointer border-none"
+        whileTap={{ scale: 0.97 }}
+        onClick={onNext}
+        className="w-full py-4 rounded-2xl font-extrabold text-sm"
         style={{
           background: "#F5C518",
           color: "#1A1A1A",
           fontFamily: "var(--font-heading)",
-          boxShadow: "0 8px 24px rgba(245,197,24,0.3)",
+          boxShadow: "0 4px 16px rgba(245,197,24,0.35)",
         }}
       >
-        Hand to Parent — Start Part B →
+        {nextLabel}
       </motion.button>
-    </motion.div>
+    </div>
   );
 }

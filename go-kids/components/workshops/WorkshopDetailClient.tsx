@@ -433,8 +433,6 @@ export default function WorkshopDetailClient({
 }: {
   workshop: Workshop;
 }) {
-  const lc = levelColor(workshop.level);
-
   const totalLessons = workshop.curriculum.reduce(
     (acc, s) => acc + s.lessons.length,
     0,

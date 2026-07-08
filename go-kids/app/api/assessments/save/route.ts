@@ -17,50 +17,44 @@ export async function POST(req: NextRequest) {
     await connectDB();
 
     const body = await req.json();
-    const { type, ageBand, childName, childId, parentAnswers, cptResult } =
-      body;
+    const {
+      type,
+      childId,
+      childName,
+      band,
+      cptRaw,
+      partBAnswers,
+      partCAnswers,
+      partDAnswers,
+      scores,
+      profile,
+    } = body;
 
     // Validate required fields
-    if (!type || !ageBand || !childName || !parentAnswers || !cptResult) {
+    if (!type || !childName || !band || !cptRaw || !partCAnswers || !partDAnswers || !scores || !profile) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
         { status: 400 },
       );
     }
 
-    // Calculate scores server-side to prevent tampering
-    const { calcResults } =
-      await import("@/components/assessments/attention-span/utils/scoring");
-    const parentRaw = (parentAnswers as number[]).reduce(
-      (a: number, b: number) => a + b,
-      0,
-    );
-    const scored = calcResults(
-      cptResult.accuracyPct, // ML accuracy (TP+TN) / total
-      cptResult.hitRatePct, // recall / sensitivity
-      cptResult.falseAlarms, // raw FP count
-      parentRaw, // parent questionnaire total
-      cptResult.shapesShown, // total shapes for proportional FA thresholds
-    );
-
+    // Save dynamic mixed document structure compatible with Assessment schema
     const assessment = await Assessment.create({
       childId: childId ? new mongoose.Types.ObjectId(childId) : undefined,
       parentId: new mongoose.Types.ObjectId(session.user.id),
       type,
       status: "completed",
       formData: {
-        ageBand,
+        band,
         childName: childName.trim(),
-        parentAnswers,
+        partBAnswers,
+        partCAnswers,
+        partDAnswers,
       },
       results: {
-        cpt: cptResult,
-        parentRaw,
-        cptScore: scored.cptScore,
-        parentScore: scored.parentScore,
-        overall: scored.overall,
-        level: scored.level,
-        sublabel: scored.sublabel,
+        cptRaw,
+        scores,
+        profile,
       },
       reportUrl: null,
     });

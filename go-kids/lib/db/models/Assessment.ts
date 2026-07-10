@@ -8,6 +8,7 @@ export interface IAssessment extends Document {
   formData: Record<string, any>;
   results: Record<string, any>;
   reportUrl?: string;
+  savedToDashboard: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,8 +49,12 @@ const AssessmentSchema = new Schema<IAssessment>(
       type: String,
       default: null,
     },
+    savedToDashboard: {
+      type: Boolean,
+      default: false,
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Assessment =

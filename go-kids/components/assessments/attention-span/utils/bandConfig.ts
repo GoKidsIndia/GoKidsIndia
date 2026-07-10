@@ -41,4 +41,4 @@ export const SHAPE_VISIBLE_MS: Record<Band, number> = {
   C: 600,
 };
 
-export const TARGET_PROBABILITY = 0.30;
+export const TARGET_PROBABILITY = 0.3;

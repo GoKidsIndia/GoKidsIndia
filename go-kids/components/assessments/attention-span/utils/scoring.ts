@@ -5,27 +5,27 @@ import { Band } from "./bandConfig";
 // ─── Raw CPT data collected across all 3 phases ───────────────────────────────
 export interface CptRawData {
   // Phase 1
-  phase1Targets:     number;
-  phase1Hits:        number;
-  phase1Misses:      number;
+  phase1Targets: number;
+  phase1Hits: number;
+  phase1Misses: number;
   phase1FalseAlarms: number;
   // Burst
-  burstStarsTotal:   number;
-  burstStarsTapped:  number;
+  burstStarsTotal: number;
+  burstStarsTapped: number;
   // Phase 3
-  phase3Targets:     number;
-  phase3Hits:        number;
-  phase3Misses:      number;
+  phase3Targets: number;
+  phase3Hits: number;
+  phase3Misses: number;
   phase3FalseAlarms: number;
   // Totals (computed before scoring)
-  totalTargets:     number;
-  totalHits:        number;
+  totalTargets: number;
+  totalHits: number;
   totalFalseAlarms: number;
-  hitRatePct:       number;
+  hitRatePct: number;
   phase1HitRatePct: number;
   phase3HitRatePct: number;
-  fatigueIndex:     number;   // phase3HitRatePct - phase1HitRatePct
-  burstTapRatePct:  number;   // burstStarsTapped / burstStarsTotal * 100
+  fatigueIndex: number; // phase3HitRatePct - phase1HitRatePct
+  burstTapRatePct: number; // burstStarsTapped / burstStarsTotal * 100
 }
 
 // ─── Helpers: build CptRawData from collected phase counters ─────────────────
@@ -42,7 +42,8 @@ export function buildCptRaw(
   const phase1HitRatePct = p1.targets > 0 ? (p1.hits / p1.targets) * 100 : 0;
   const phase3HitRatePct = p3.targets > 0 ? (p3.hits / p3.targets) * 100 : 0;
   const fatigueIndex = phase3HitRatePct - phase1HitRatePct;
-  const burstTapRatePct = burst.total > 0 ? (burst.tapped / burst.total) * 100 : 0;
+  const burstTapRatePct =
+    burst.total > 0 ? (burst.tapped / burst.total) * 100 : 0;
 
   return {
     phase1Targets: p1.targets,
@@ -68,23 +69,21 @@ export function buildCptRaw(
 
 // ─── Part A scoring ──────────────────────────────────────────────────────────
 export interface PartAScores {
-  cptBaseScore:   number;
-  recoveryScore:  number;
-  fatigueIndex:   number;
-  fatigueFlag:    boolean;
-  recoveryBonus:  boolean;
+  cptBaseScore: number;
+  recoveryScore: number;
+  fatigueIndex: number;
+  fatigueFlag: boolean;
+  recoveryBonus: boolean;
 }
 
 export function scorePartA(cpt: CptRawData): PartAScores {
   // Step 1a: CPT base score from hit rate
-  let cptBaseScore =
-    cpt.hitRatePct >= 85 ? 90 :
-    cpt.hitRatePct >= 65 ? 60 :
-    25;
+  let cptBaseScore = cpt.hitRatePct >= 85 ? 90 : cpt.hitRatePct >= 65 ? 60 : 25;
 
   // Step 1b: False alarm deduction
-  if (cpt.totalFalseAlarms > 20)      cptBaseScore = Math.max(0, cptBaseScore - 20);
-  else if (cpt.totalFalseAlarms > 10) cptBaseScore = Math.max(0, cptBaseScore - 8);
+  if (cpt.totalFalseAlarms > 20) cptBaseScore = Math.max(0, cptBaseScore - 20);
+  else if (cpt.totalFalseAlarms > 10)
+    cptBaseScore = Math.max(0, cptBaseScore - 8);
 
   // Step 1c: Fatigue index
   const fatigueIndex = cpt.phase3HitRatePct - cpt.phase1HitRatePct;
@@ -92,15 +91,19 @@ export function scorePartA(cpt: CptRawData): PartAScores {
 
   // Step 1d: Recovery score from burst
   let recoveryScore =
-    cpt.burstTapRatePct >= 70 ? 85 :
-    cpt.burstTapRatePct >= 40 ? 55 :
-    25;
+    cpt.burstTapRatePct >= 70 ? 85 : cpt.burstTapRatePct >= 40 ? 55 : 25;
 
   // Step 1e: Post-burst recovery bonus
   const recoveryBonus = cpt.phase3HitRatePct > cpt.phase1HitRatePct;
   if (recoveryBonus) recoveryScore = Math.min(100, recoveryScore + 10);
 
-  return { cptBaseScore, recoveryScore, fatigueIndex, fatigueFlag, recoveryBonus };
+  return {
+    cptBaseScore,
+    recoveryScore,
+    fatigueIndex,
+    fatigueFlag,
+    recoveryBonus,
+  };
 }
 
 // ─── Part B scoring ──────────────────────────────────────────────────────────
@@ -110,7 +113,7 @@ export function scorePartB(rawAnswers: number[], band: Band): number {
 
   const REVERSE_INDICES = [1, 4, 5]; // B2, B5, B6
   const scored = rawAnswers.map((v, i) =>
-    REVERSE_INDICES.includes(i) ? 6 - v : v
+    REVERSE_INDICES.includes(i) ? 6 - v : v,
   );
   const sum = scored.reduce((a, b) => a + b, 0); // max 30
   return Math.round((sum / 30) * 100);
@@ -125,10 +128,12 @@ export interface PartCScores {
 export function scorePartC(rawAnswers: number[]): PartCScores {
   const REVERSE_INDICES = [1, 3, 7, 8, 10]; // C2, C4, C8, C9, C11
   const scored = rawAnswers.map((v, i) =>
-    REVERSE_INDICES.includes(i) ? 6 - v : v
+    REVERSE_INDICES.includes(i) ? 6 - v : v,
   );
 
-  const parentScore = Math.round((scored.reduce((a, b) => a + b, 0) / 60) * 100);
+  const parentScore = Math.round(
+    (scored.reduce((a, b) => a + b, 0) / 60) * 100,
+  );
 
   const clusterScores = {
     c1: Math.round(((scored[0] + scored[1] + scored[2]) / 15) * 100),
@@ -148,31 +153,37 @@ export function scorePartD(rawAnswers: number[]): number {
 
 // ─── Gap flag ────────────────────────────────────────────────────────────────
 export interface GapFlag {
-  hasGap:    boolean;
+  hasGap: boolean;
   direction: "cpt_higher" | "parent_higher" | null;
 }
 
-export function detectGapFlag(cptBaseScore: number, parentScore: number): GapFlag {
+export function detectGapFlag(
+  cptBaseScore: number,
+  parentScore: number,
+): GapFlag {
   const diff = cptBaseScore - parentScore;
   if (Math.abs(diff) >= 25) {
-    return { hasGap: true, direction: diff > 0 ? "cpt_higher" : "parent_higher" };
+    return {
+      hasGap: true,
+      direction: diff > 0 ? "cpt_higher" : "parent_higher",
+    };
   }
   return { hasGap: false, direction: null };
 }
 
 // ─── Aggregated scores shape (passed to determineProfile) ────────────────────
 export interface AllScores {
-  cptBaseScore:   number;
-  recoveryScore:  number;
-  fatigueIndex:   number;
-  fatigueFlag:    boolean;
-  recoveryBonus:  boolean;
+  cptBaseScore: number;
+  recoveryScore: number;
+  fatigueIndex: number;
+  fatigueFlag: boolean;
+  recoveryBonus: boolean;
   selfReportScore: number;
-  parentScore:    number;
-  clusterScores:  { c1: number; c2: number; c3: number; c4: number };
+  parentScore: number;
+  clusterScores: { c1: number; c2: number; c3: number; c4: number };
   motivationScore: number;
-  gapFlag:        boolean;
-  gapDirection:   "cpt_higher" | "parent_higher" | null;
+  gapFlag: boolean;
+  gapDirection: "cpt_higher" | "parent_higher" | null;
 }
 
 export function computeAllScores(

@@ -12,8 +12,14 @@ interface Props {
 
 export function BurstChallengeScreen({ band, onBurstEnd }: Props) {
   const duration = BAND_CONFIG[band].phase2Seconds;
-  const { secondsLeft, currentStar, tapCount, totalStars, startBurst, handleStarTap } =
-    useBurstChallenge({ durationSeconds: duration, onBurstEnd });
+  const {
+    secondsLeft,
+    currentStar,
+    tapCount,
+    totalStars,
+    startBurst,
+    handleStarTap,
+  } = useBurstChallenge({ durationSeconds: duration, onBurstEnd });
 
   useEffect(() => {
     startBurst();
@@ -21,16 +27,23 @@ export function BurstChallengeScreen({ band, onBurstEnd }: Props) {
 
   return (
     <div
-      className="min-h-[520px] flex flex-col items-center pt-6 pb-4 px-2 rounded-2xl relative overflow-hidden"
+      className="min-h-130 flex flex-col items-center pt-6 pb-4 px-2 rounded-2xl relative overflow-hidden"
       style={{ background: "#FFF8DC" }}
     >
       {/* Header */}
       <div className="text-center space-y-1 z-10 relative">
-        <h2 className="text-3xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2
+          className="text-3xl font-extrabold text-brand-black"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
           STAR BURST! ⚡
         </h2>
-        <p className="text-sm font-extrabold text-[#92700A]">Tap every star as fast as you can!</p>
-        <p className="text-2xl font-extrabold text-[#1A1A1A] mt-1">{secondsLeft}s</p>
+        <p className="text-sm font-extrabold text-amber-700">
+          Tap every star as fast as you can!
+        </p>
+        <p className="text-2xl font-extrabold text-brand-black mt-1">
+          {secondsLeft}s
+        </p>
       </div>
 
       {/* Stars arena */}
@@ -67,9 +80,21 @@ export function BurstChallengeScreen({ band, onBurstEnd }: Props) {
         </AnimatePresence>
 
         {/* Background decorative stars (faint) */}
-        <div className="absolute inset-0 pointer-events-none opacity-10 select-none" style={{ fontSize: 20, color: "#F5C518" }}>
+        <div
+          className="absolute inset-0 pointer-events-none opacity-10 select-none"
+          style={{ fontSize: 20, color: "#F5C518" }}
+        >
           {["★", "★", "★", "★", "★"].map((s, i) => (
-            <span key={i} style={{ position: "absolute", left: `${15 + i * 18}%`, top: `${20 + (i % 3) * 25}%` }}>{s}</span>
+            <span
+              key={i}
+              style={{
+                position: "absolute",
+                left: `${15 + i * 18}%`,
+                top: `${20 + (i % 3) * 25}%`,
+              }}
+            >
+              {s}
+            </span>
           ))}
         </div>
       </div>
@@ -79,10 +104,15 @@ export function BurstChallengeScreen({ band, onBurstEnd }: Props) {
         className="mt-4 px-6 py-3 rounded-2xl text-center z-10 relative"
         style={{ background: "rgba(245,197,24,0.25)" }}
       >
-        <p className="text-2xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+        <p
+          className="text-2xl font-extrabold text-brand-black"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
           {tapCount}
         </p>
-        <p className="text-xs text-[#92700A] font-extrabold">Stars tapped {totalStars > 0 ? `of ${totalStars}` : ""}</p>
+        <p className="text-xs text-[#92700A] font-extrabold">
+          Stars tapped {totalStars > 0 ? `of ${totalStars}` : ""}
+        </p>
       </div>
     </div>
   );

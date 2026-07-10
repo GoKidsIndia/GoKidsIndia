@@ -10,7 +10,9 @@ interface Props {
 
 export function MotivationQuestionsScreen({ onComplete }: Props) {
   const [current, setCurrent] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(Array(PART_D_QUESTIONS.length).fill(null));
+  const [answers, setAnswers] = useState<(number | null)[]>(
+    Array(PART_D_QUESTIONS.length).fill(null),
+  );
   const [pulse, setPulse] = useState(false);
 
   const question = PART_D_QUESTIONS[current];
@@ -40,14 +42,22 @@ export function MotivationQuestionsScreen({ onComplete }: Props) {
     <div className="space-y-5 py-2">
       {/* Part badge */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#FFFBEA] text-[#D4A900]" style={{ fontFamily: "var(--font-heading)" }}>
+        <span
+          className="text-xs font-extrabold px-3 py-1 rounded-full bg-[#FFFBEA] text-primary-dark"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
           Part 4 — Motivation
         </span>
-        <span className="text-xs font-semibold text-gray-400">Question {current + 1} of {PART_D_QUESTIONS.length}</span>
+        <span className="text-xs font-semibold text-gray-400">
+          Question {current + 1} of {PART_D_QUESTIONS.length}
+        </span>
       </div>
 
       {/* Progress bar */}
-      <div className="h-2 rounded-full overflow-hidden" style={{ background: "#F3F4F6" }}>
+      <div
+        className="h-2 rounded-full overflow-hidden"
+        style={{ background: "#F3F4F6" }}
+      >
         <motion.div
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.4 }}
@@ -66,14 +76,19 @@ export function MotivationQuestionsScreen({ onComplete }: Props) {
           transition={{ duration: 0.25 }}
           className="space-y-5"
         >
-          <div className="rounded-2xl p-5 min-h-[110px] flex items-center" style={{ background: "#FAFAF8", border: "1.5px solid #F3F4F6" }}>
-            <p className="text-sm sm:text-base font-semibold text-[#1A1A1A] leading-relaxed">
+          <div
+            className="rounded-2xl p-5 min-h-27.5 flex items-center"
+            style={{ background: "#FAFAF8", border: "1.5px solid #F3F4F6" }}
+          >
+            <p className="text-sm sm:text-base font-semibold text-brand-black leading-relaxed">
               {question.text}
             </p>
           </div>
 
           {/* Rating buttons */}
-          <div className={`grid grid-cols-5 gap-1.5 ${pulse ? "ring-2 ring-red-300 ring-offset-2 rounded-xl" : ""}`}>
+          <div
+            className={`grid grid-cols-5 gap-1.5 ${pulse ? "ring-2 ring-red-300 ring-offset-2 rounded-xl" : ""}`}
+          >
             {PART_D_LABELS.map((label, i) => {
               const val = i + 1;
               const isSelected = selected === val;
@@ -92,7 +107,9 @@ export function MotivationQuestionsScreen({ onComplete }: Props) {
                   }}
                 >
                   <span className="text-base font-extrabold">{val}</span>
-                  <span className="text-[8px] font-semibold text-center leading-tight mt-1 text-gray-400">{label}</span>
+                  <span className="text-[8px] font-semibold text-center leading-tight mt-1 text-gray-400">
+                    {label}
+                  </span>
                 </motion.button>
               );
             })}
@@ -109,7 +126,8 @@ export function MotivationQuestionsScreen({ onComplete }: Props) {
           background: selected !== null ? "#F5C518" : "#F3F4F6",
           color: selected !== null ? "#1A1A1A" : "#9CA3AF",
           fontFamily: "var(--font-heading)",
-          boxShadow: selected !== null ? "0 4px 16px rgba(245,197,24,0.35)" : "none",
+          boxShadow:
+            selected !== null ? "0 4px 16px rgba(245,197,24,0.35)" : "none",
         }}
       >
         {current < PART_D_QUESTIONS.length - 1 ? "Next →" : "See Results →"}

@@ -9,30 +9,57 @@ interface Props {
 export function HandToParentScreen({ onContinue }: Props) {
   return (
     <div className="space-y-6 py-2 text-center">
-      <div className="text-6xl">🤝</div>
+      <div className="text-4xl sm:text-6xl">🤝</div>
       <div className="space-y-2">
-        <h2 className="text-2xl font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>
+        <h2
+          className="text-2xl font-extrabold text-brand-black"
+          style={{ fontFamily: "var(--font-heading)" }}
+        >
           Time to hand the device to a parent or guardian
         </h2>
         <p className="text-sm text-gray-500 font-semibold leading-relaxed max-w-sm mx-auto">
-          The child&apos;s part is done — great work! The next two sections are for parents to complete.
+          The child&apos;s part is done. Great work! The next two sections are
+          for parents to complete.
         </p>
       </div>
 
       {/* What&apos;s next cards */}
       <div className="space-y-3 text-left">
-        <div className="rounded-2xl p-4 flex items-start gap-4" style={{ background: "#E8F8F7", border: "1px solid #2BBCB0" }}>
+        <div
+          className="rounded-2xl p-4 flex items-start gap-4"
+          style={{ background: "#E8F8F7", border: "1px solid #2BBCB0" }}
+        >
           <span className="text-2xl shrink-0">👀</span>
           <div>
-            <p className="text-sm font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>Part 3 — Parent Observations</p>
-            <p className="text-xs text-gray-500 font-semibold mt-0.5">12 questions · 8–10 minutes · Based on what you see at home</p>
+            <p
+              className="text-sm font-extrabold text-brand-black"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Part 3: Parent Observations
+            </p>
+            <p className="text-xs text-gray-500 font-semibold mt-0.5">
+              12 questions · 8-10 minutes · Based on what you see at home
+            </p>
           </div>
         </div>
-        <div className="rounded-2xl p-4 flex items-start gap-4" style={{ background: "#FFFBEA", border: "1px solid rgba(245,197,24,0.4)" }}>
+        <div
+          className="rounded-2xl p-4 flex items-start gap-4"
+          style={{
+            background: "#FFFBEA",
+            border: "1px solid rgba(245,197,24,0.4)",
+          }}
+        >
           <span className="text-2xl shrink-0">⚡</span>
           <div>
-            <p className="text-sm font-extrabold text-[#1A1A1A]" style={{ fontFamily: "var(--font-heading)" }}>Part 4 — Motivation Check</p>
-            <p className="text-xs text-gray-500 font-semibold mt-0.5">10 questions · 5 minutes · Most important section</p>
+            <p
+              className="text-sm font-extrabold text-brand-black"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
+              Part 4: Motivation Check
+            </p>
+            <p className="text-xs text-gray-500 font-semibold mt-0.5">
+              10 questions · 5 minutes · Most important section
+            </p>
           </div>
         </div>
       </div>
@@ -49,7 +76,7 @@ export function HandToParentScreen({ onContinue }: Props) {
           boxShadow: "0 4px 16px rgba(245,197,24,0.35)",
         }}
       >
-        I&apos;m the parent — continue →
+        I&apos;m the parent. Continue →
       </motion.button>
     </div>
   );

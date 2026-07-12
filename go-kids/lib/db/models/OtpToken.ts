@@ -24,7 +24,8 @@ const OtpTokenSchema = new Schema<IOtpToken>(
       index: { expires: 0 }, // MongoDB TTL index — auto-deletes expired tokens
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
-export const OtpToken = models.OtpToken || model<IOtpToken>("OtpToken", OtpTokenSchema);
+export const OtpToken =
+  models.OtpToken || model<IOtpToken>("OtpToken", OtpTokenSchema);

@@ -54,7 +54,7 @@ const ChildSchema = new Schema<IChild>(
       trim: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export const Child = models.Child || model<IChild>("Child", ChildSchema);

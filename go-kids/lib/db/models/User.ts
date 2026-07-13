@@ -1,6 +1,11 @@
 import { Schema, model, models, Document } from "mongoose";
 
-export type UserRole = "parent" | "instructor" | "mentor" | "admin" | "superadmin";
+export type UserRole =
+  | "parent"
+  | "instructor"
+  | "mentor"
+  | "admin"
+  | "superadmin";
 
 export interface IUser extends Document {
   name: string;
@@ -71,7 +76,7 @@ const UserSchema = new Schema<IUser>(
       required: false,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Prevent model re-compilation in dev (hot-reload)

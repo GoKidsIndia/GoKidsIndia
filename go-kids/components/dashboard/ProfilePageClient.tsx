@@ -804,7 +804,7 @@ export default function ProfilePageClient({
       </div>
 
       {/* Mobile bottom tab bar — only on small screens */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-[#E5E7EB] flex md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
+      <div className="fixed bottom-0 left-0 right-0 z-10 bg-white border-t border-[#E5E7EB] flex md:hidden shadow-[0_-4px_16px_rgba(0,0,0,0.04)]">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;

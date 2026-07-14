@@ -112,7 +112,7 @@ export default function WorkshopsClient({ workshops }: WorkshopsClientProps) {
     [workshops]
   );
   const skills = useMemo(
-    () => [...new Set(workshops.map((w) => w.skill))].sort(),
+    () => [...new Set(workshops.flatMap((w) => w.skills || []))].sort(),
     [workshops]
   );
 
@@ -138,12 +138,12 @@ export default function WorkshopsClient({ workshops }: WorkshopsClientProps) {
         (w) =>
           w.title.toLowerCase().includes(q) ||
           w.shortDescription.toLowerCase().includes(q) ||
-          w.skill.toLowerCase().includes(q)
+          (w.skills || []).some((s) => s.toLowerCase().includes(q))
       );
     }
     if (filters.level.length)    result = result.filter((w) => filters.level.includes(w.level));
     if (filters.ageGroup.length) result = result.filter((w) => filters.ageGroup.includes(w.ageGroup));
-    if (filters.skill.length)    result = result.filter((w) => filters.skill.includes(w.skill));
+    if (filters.skill.length)    result = result.filter((w) => (w.skills || []).some((s) => filters.skill.includes(s)));
 
     if (sort === "rating")  result.sort((a, b) => b.rating - a.rating);
     if (sort === "popular") result.sort((a, b) => b.enrolledCount - a.enrolledCount);

@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getWorkshopBySlug } from "@/lib/data/workshops";
 import WorkshopDetailClient from "@/components/workshops/WorkshopDetailClient";
+import { auth } from "@/auth";
+import { connectDB } from "@/lib/db/connect";
+import EnrollmentModel from "@/lib/db/models/Enrollment";
+import mongoose from "mongoose";
 
 // Dynamic rendering — page is generated on-demand, not at build time.
 // This means new workshops added to MongoDB are immediately available.
@@ -37,5 +41,26 @@ export default async function WorkshopDetailPage({
   const workshop = await getWorkshopBySlug(slug);
   if (!workshop) notFound();
 
-  return <WorkshopDetailClient workshop={workshop} />;
+  const session = await auth();
+  let isEnrolled = false;
+
+  if (session?.user?.id) {
+    const parentId = (session.user as { id?: string }).id;
+    if (parentId) {
+      await connectDB();
+      const exists = await EnrollmentModel.exists({
+        parentId: new mongoose.Types.ObjectId(parentId),
+        workshopId: new mongoose.Types.ObjectId(workshop._id),
+      });
+      isEnrolled = !!exists;
+    }
+  }
+
+  return (
+    <WorkshopDetailClient
+      workshop={workshop}
+      isLoggedIn={!!session?.user?.id}
+      isEnrolled={isEnrolled}
+    />
+  );
 }

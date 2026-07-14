@@ -13,11 +13,11 @@ import WorkshopModel from "@/lib/db/models/Workshop";
 
 export interface WorkshopLesson {
   title: string;
-  duration: string; // e.g. "30 min"
 }
 
 export interface WorkshopSection {
   title: string;
+  duration: string; // e.g. "60 min"
   lessons: WorkshopLesson[];
 }
 
@@ -42,17 +42,22 @@ export interface Workshop {
   title: string;
   shortDescription: string;
   longDescription: string;
-  instructor: WorkshopInstructor;
-  instructors?: WorkshopInstructor[];
+  instructors: WorkshopInstructor[];
   thumbnail: string;
   ageGroup: string; // e.g. "9–11"
-  level: "Beginner" | "Intermediate" | "Advanced";
-  skill: string; // e.g. "Coding", "Mathematics"
+  level: "Beginner" | "Intermediate" | "Advanced" | "Parents";
+  skills: string[]; // e.g. ["Coding", "Mathematics"]
   category: string; // used for filter grouping
   duration: string; // e.g. "4 Weeks"
   sessions: number;
+  isOffline: boolean;
+  date: string;
+  time: string;
+  venue?: string;
+  googleMapsUrl?: string;
   isFree: boolean;
   price?: number;
+  isEnrollmentOpen: boolean;
   enrolledCount: number;
   rating: number;
   highlights: string[]; // bullet points for Overview tab
@@ -91,9 +96,9 @@ function toWorkshop(doc: any): Workshop {
         : doc.updatedAt,
   };
 
-  // Ensure instructors is always populated and is a non-empty array
-  if (!plainDoc.instructors || plainDoc.instructors.length === 0) {
-    plainDoc.instructors = plainDoc.instructor ? [plainDoc.instructor] : [];
+  plainDoc.instructors = plainDoc.instructors || [];
+  if (plainDoc.instructor) {
+    delete plainDoc.instructor;
   }
 
   return plainDoc;
@@ -116,11 +121,11 @@ export async function getWorkshops(
 
   if (filters?.level?.length) query.level = { $in: filters.level };
   if (filters?.ageGroup?.length) query.ageGroup = { $in: filters.ageGroup };
-  if (filters?.skill?.length) query.skill = { $in: filters.skill };
+  if (filters?.skill?.length) query.skills = { $in: filters.skill };
 
   if (filters?.query) {
     const re = new RegExp(filters.query, "i");
-    query.$or = [{ title: re }, { shortDescription: re }, { skill: re }];
+    query.$or = [{ title: re }, { shortDescription: re }, { skills: re }];
   }
 
   // Sort

@@ -78,15 +78,33 @@ export default function WorkshopCard({ workshop }: WorkshopCardProps) {
               FREE
             </span>
           )}
+          {/* OFFLINE badge */}
+          {workshop.isOffline && (
+            <span
+              className="absolute top-3 right-3 px-2.5 py-1 rounded-full text-xs font-extrabold"
+              style={{
+                background: "#2BBCB0",
+                color: "white",
+                fontFamily: "var(--font-nunito)",
+                boxShadow: "0 2px 8px rgba(43,188,176,0.35)",
+              }}
+            >
+              OFFLINE
+            </span>
+          )}
         </div>
 
         {/* Body */}
         <div className="flex flex-col flex-1 p-5 gap-3">
-          {/* Tag chips */}
+          {/* Tag chips — top 2 filters only */}
           <div className="flex flex-wrap gap-1.5">
-            <Chip label={`Ages ${workshop.ageGroup}`} color="teal" />
-            <Chip label={workshop.level} color="coral" />
-            <Chip label={workshop.skill} color="sky" />
+            {[
+              <Chip key="age" label={`${workshop.ageGroup} years`} color="teal" />,
+              <Chip key="level" label={workshop.level} color="coral" />,
+              ...(workshop.skills || []).map((s) => (
+                <Chip key={s} label={s} color="sky" />
+              )),
+            ].slice(0, 4)}
           </div>
 
           {/* Title */}
@@ -110,12 +128,12 @@ export default function WorkshopCard({ workshop }: WorkshopCardProps) {
               style={{ color: "#6B7280" }}
             >
               {(() => {
-                const list = workshop.instructors || [workshop.instructor];
+                const list = workshop.instructors || [];
                 if (list.length === 0) return "";
                 if (list.length === 1) return list[0].name;
                 if (list.length === 2)
                   return `${list[0].name} & ${list[1].name}`;
-                return `${list[0].name} +${list.length - 1} more`;
+                return `${list.slice(0, -1).map((i) => i.name).join(", ")} & ${list[list.length - 1].name}`;
               })()}
             </span>
 

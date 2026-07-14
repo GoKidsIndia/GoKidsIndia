@@ -5,7 +5,6 @@ import mongoose, { Schema, type Document, type Model } from "mongoose";
 const LessonSchema = new Schema(
   {
     title: { type: String, required: true },
-    duration: { type: String, required: true }, // e.g. "30 min"
   },
   { _id: false },
 );
@@ -13,6 +12,7 @@ const LessonSchema = new Schema(
 const SectionSchema = new Schema(
   {
     title: { type: String, required: true },
+    duration: { type: String, required: true }, // e.g. "60 min"
     lessons: { type: [LessonSchema], default: [] },
   },
   { _id: false },
@@ -46,14 +46,7 @@ export interface IWorkshop extends Document {
   title: string;
   shortDescription: string;
   longDescription: string;
-  instructor: {
-    name: string;
-    title: string;
-    bio: string;
-    avatar: string;
-    experience: string;
-  };
-  instructors?: {
+  instructors: {
     name: string;
     title: string;
     bio: string;
@@ -62,13 +55,19 @@ export interface IWorkshop extends Document {
   }[];
   thumbnail: string;
   ageGroup: string; // e.g. "9–11"
-  level: "Beginner" | "Intermediate" | "Advanced";
-  skill: string; // e.g. "Coding"
+  level: "Beginner" | "Intermediate" | "Advanced" | "Parents";
+  skills: string[]; // e.g. ["Coding"]
   category: string; // e.g. "Technology"
   duration: string; // e.g. "4 Weeks"
   sessions: number;
   isFree: boolean;
   price?: number;
+  isOffline: boolean;
+  date: string;
+  time: string;
+  venue?: string;
+  googleMapsUrl?: string;
+  isEnrollmentOpen: boolean;
   enrolledCount: number;
   rating: number;
   highlights: string[];
@@ -91,21 +90,26 @@ const WorkshopSchema = new Schema<IWorkshop>(
     title: { type: String, required: true },
     shortDescription: { type: String, required: true },
     longDescription: { type: String, required: true },
-    instructor: { type: InstructorSchema, required: true },
-    instructors: { type: [InstructorSchema], default: [] },
+    instructors: { type: [InstructorSchema], required: true },
     thumbnail: { type: String, required: true },
     ageGroup: { type: String, required: true },
     level: {
       type: String,
       required: true,
-      enum: ["Beginner", "Intermediate", "Advanced"],
+      enum: ["Beginner", "Intermediate", "Advanced", "Parents"],
     },
-    skill: { type: String, required: true },
+    skills: { type: [String], default: [] },
     category: { type: String, required: true },
     duration: { type: String, required: true },
     sessions: { type: Number, required: true },
+    isOffline: { type: Boolean, required: true, default: false },
+    date: { type: String, required: true },
+    time: { type: String, required: true },
+    venue: { type: String },
+    googleMapsUrl: { type: String },
     isFree: { type: Boolean, required: true, default: true },
     price: { type: Number },
+    isEnrollmentOpen: { type: Boolean, required: true, default: true },
     enrolledCount: { type: Number, required: true, default: 0 },
     rating: { type: Number, required: true, default: 0 },
     highlights: { type: [String], default: [] },

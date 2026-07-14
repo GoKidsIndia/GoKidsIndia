@@ -556,21 +556,22 @@ function MobileEnrollBar({
       }}
     >
       <div className="flex items-center gap-3">
-        <div className="min-w-0">
+        <div className="min-w-0 flex flex-col gap-0.5">
           <p
-            className="text-base font-extrabold leading-tight"
+            className="text-base font-extrabold leading-none"
             style={{ fontFamily: "var(--font-nunito)", color: "#1A1A1A" }}
           >
             {workshop.isFree
               ? "FREE"
               : `₹${workshop.price?.toLocaleString("en-IN")}`}
           </p>
-          <p
-            className="text-[11px] font-semibold truncate"
+          <div
+            className="text-[10px] font-bold leading-tight"
             style={{ color: "#6B7280", fontFamily: "var(--font-nunito)" }}
           >
-            {workshop.date} · {workshop.time}
-          </p>
+            <div className="truncate">{workshop.date}</div>
+            <div className="truncate text-[9px] font-medium" style={{ color: "#9CA3AF" }}>{workshop.time}</div>
+          </div>
         </div>
         <div className="flex-1">
           <EnrollButton

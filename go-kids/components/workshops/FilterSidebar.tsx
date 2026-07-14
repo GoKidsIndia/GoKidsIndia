@@ -152,7 +152,7 @@ export default function FilterSidebar({
           {ageGroups.map((a) => (
             <CheckRow
               key={a}
-              label={`Ages ${a}`}
+              label={`${a}`}
               checked={filters.ageGroup.includes(a)}
               onChange={(v) => toggle("ageGroup", a, v)}
             />

@@ -25,7 +25,9 @@ import EditProfileDialog from "@/components/dashboard/EditProfileDialog";
 import ChildCard, { type ChildData } from "@/components/dashboard/ChildCard";
 import ChildFormDialog from "@/components/dashboard/ChildFormDialog";
 import DeleteChildDialog from "@/components/dashboard/DeleteChildDialog";
-import AssessmentReportModal, { type DBAssessmentFull } from "@/components/dashboard/AssessmentReportModal";
+import AssessmentReportModal, {
+  type DBAssessmentFull,
+} from "@/components/dashboard/AssessmentReportModal";
 
 interface UserProfile {
   _id: string;
@@ -44,6 +46,7 @@ interface ProfilePageClientProps {
   user: UserProfile;
   childProfiles: ChildData[];
   dbAssessments?: DBAssessmentFull[];
+  enrollments?: any[];
 }
 
 function getInitials(name: string) {
@@ -67,6 +70,7 @@ export default function ProfilePageClient({
   user,
   childProfiles,
   dbAssessments,
+  enrollments = [],
 }: ProfilePageClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -83,7 +87,8 @@ export default function ProfilePageClient({
   const [deleteChild, setDeleteChild] = useState<ChildData | null>(null);
 
   // Assessment report modal
-  const [viewingAssessment, setViewingAssessment] = useState<DBAssessmentFull | null>(null);
+  const [viewingAssessment, setViewingAssessment] =
+    useState<DBAssessmentFull | null>(null);
 
   // Sync tab selection from search parameter
   useEffect(() => {
@@ -186,6 +191,13 @@ export default function ProfilePageClient({
 
   return (
     <div className="px-4 sm:px-6 py-10 max-w-6xl mx-auto space-y-8 min-h-[75vh]">
+      {searchParams.get("enrolled") === "true" && (
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm font-semibold">
+          <span className="text-base">🎉</span>
+          Enrollment successful! Your workshop registration is confirmed.
+        </div>
+      )}
+
       {/* ── Page Header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#E5E7EB] pb-5">
         <div>
@@ -514,7 +526,7 @@ export default function ProfilePageClient({
                     Manage Children
                   </button>
                 </div>
-              ) : (
+              ) : enrollments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-4xl bg-white space-y-4 shadow-sm">
                   <div className="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center text-2xl mx-auto">
                     📚
@@ -540,6 +552,77 @@ export default function ProfilePageClient({
                   >
                     Explore Workshops
                   </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {enrollments.map((enrol) => {
+                    const workshop = enrol.workshopId;
+                    if (!workshop) return null;
+                    return (
+                      <div
+                        key={enrol._id}
+                        className="bg-white rounded-3xl overflow-hidden border border-[#E5E7EB] shadow-xs hover:shadow-md transition-all flex flex-col md:flex-row h-full"
+                      >
+                        {/* Thumbnail */}
+                        <div className="relative w-full md:w-40 h-40 shrink-0 bg-brand-offwhite">
+                          <Image
+                            src={workshop.thumbnail}
+                            alt={workshop.title}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                        {/* Info details */}
+                        <div className="p-5 flex flex-col justify-between flex-1 space-y-3">
+                          <div>
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <span className="text-[10px] font-extrabold uppercase px-2.5 py-0.5 rounded-full bg-[#E8F8F7] text-teal">
+                                Enrolled ✓
+                              </span>
+                              <span className="text-[11px] font-bold text-gray-400">
+                                {new Date(enrol.enrolledAt).toLocaleDateString(
+                                  "en-IN",
+                                  {
+                                    year: "numeric",
+                                    month: "short",
+                                    day: "numeric",
+                                  },
+                                )}
+                              </span>
+                            </div>
+                            <h4
+                              className="text-sm sm:text-base font-extrabold text-brand-black line-clamp-1"
+                              style={{ fontFamily: "var(--font-heading)" }}
+                            >
+                              {workshop.title}
+                            </h4>
+                            <p className="text-[11px] text-gray-500 font-semibold mt-1">
+                              {workshop.ageGroup} · {workshop.duration} (
+                              {workshop.sessions} sessions)
+                            </p>
+                          </div>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-brand-grey">
+                            <span className="text-xs sm:text-sm font-extrabold text-brand-black">
+                              {workshop.isFree
+                                ? "Free"
+                                : `₹${enrol.amountPaid}`}
+                            </span>
+                            <Link
+                              href={`/workshops/${workshop.slug}`}
+                              className="px-4 py-2 rounded-xl text-[10px] sm:text-xs font-extrabold bg-brand-offwhite hover:bg-primary text-brand-black border border-brand-grey transition-colors text-center"
+                              style={{
+                                fontFamily: "var(--font-heading)",
+                                textDecoration: "none",
+                              }}
+                            >
+                              View Details
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </motion.div>

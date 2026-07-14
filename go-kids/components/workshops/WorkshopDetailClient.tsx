@@ -6,29 +6,30 @@ import Image from "next/image";
 import Link from "next/link";
 import {
   ChevronDown,
-  Star,
+  // Star,
   ArrowLeft,
   Clock,
   Users,
-  BarChart2,
+  // BarChart2,
   Calendar,
   CheckCircle2,
   BookOpen,
   Award,
   Play,
   ChevronRight,
-  MessageSquare,
-  ArrowRight,
+  // MessageSquare,
   Zap,
+  MapPin,
 } from "lucide-react";
 
 import type { Workshop } from "@/lib/data/workshops";
+import Script from "next/script";
+import { useSearchParams } from "next/navigation";
+import EnrollButton from "./EnrollButton";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getInstructors = (workshop: Workshop) => {
-  return workshop.instructors && workshop.instructors.length > 0
-    ? workshop.instructors
-    : [workshop.instructor];
+  return workshop.instructors || [];
 };
 
 const getInstructorsNamesList = (instructors: any[]) => {
@@ -43,21 +44,21 @@ const getInstructorsNamesList = (instructors: any[]) => {
 };
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
-function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {[1, 2, 3, 4, 5].map((s) => (
-        <Star
-          key={s}
-          size={size}
-          fill={s <= Math.round(rating) ? "#F5C518" : "none"}
-          stroke={s <= Math.round(rating) ? "#F5C518" : "#D1D5DB"}
-          strokeWidth={1.5}
-        />
-      ))}
-    </div>
-  );
-}
+// function StarRating({ rating, size = 14 }: { rating: number; size?: number }) {
+//   return (
+//     <div className="flex items-center gap-0.5">
+//       {[1, 2, 3, 4, 5].map((s) => (
+//         <Star
+//           key={s}
+//           size={size}
+//           fill={s <= Math.round(rating) ? "#F5C518" : "none"}
+//           stroke={s <= Math.round(rating) ? "#F5C518" : "#D1D5DB"}
+//           strokeWidth={1.5}
+//         />
+//       ))}
+//     </div>
+//   );
+// }
 
 // ─── Section heading ─────────────────────────────────────────────────────────
 function SectionHeading({
@@ -90,18 +91,16 @@ function SectionHeading({
 // ─── Accordion ────────────────────────────────────────────────────────────────
 function AccordionSection({
   title,
+  duration,
   lessons,
   index,
 }: {
   title: string;
+  duration: string;
   lessons: Workshop["curriculum"][number]["lessons"];
   index: number;
 }) {
   const [open, setOpen] = useState(index === 0);
-  const totalTime = lessons.reduce((acc, l) => {
-    const m = parseInt(l.duration);
-    return acc + (isNaN(m) ? 0 : m);
-  }, 0);
 
   return (
     <div
@@ -139,7 +138,7 @@ function AccordionSection({
             className="text-xs font-semibold hidden sm:inline"
             style={{ color: "#9CA3AF" }}
           >
-            {lessons.length} lessons · {totalTime} min
+          {lessons.length} lessons · {duration}
           </span>
           <motion.div
             animate={{ rotate: open ? 180 : 0 }}
@@ -183,13 +182,6 @@ function AccordionSection({
                   >
                     {lesson.title}
                   </span>
-                  <span
-                    className="text-xs font-semibold flex items-center gap-1 shrink-0"
-                    style={{ color: "#9CA3AF" }}
-                  >
-                    <Clock size={11} />
-                    {lesson.duration}
-                  </span>
                 </div>
               ))}
             </div>
@@ -200,8 +192,16 @@ function AccordionSection({
   );
 }
 
-// ─── Enrollment Sidebar ───────────────────────────────────────────────────────
-function EnrollSidebar({ workshop }: { workshop: Workshop }) {
+// ─── Enrollment Sidebar (desktop) ─────────────────────────────────────────────
+function EnrollSidebar({
+  workshop,
+  isLoggedIn,
+  isEnrolled,
+}: {
+  workshop: Workshop;
+  isLoggedIn: boolean;
+  isEnrolled: boolean;
+}) {
   const stats = [
     {
       icon: <Play size={14} />,
@@ -209,12 +209,47 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
       value: `${workshop.sessions} live sessions`,
     },
     { icon: <Clock size={14} />, label: "Duration", value: workshop.duration },
-    { icon: <BarChart2 size={14} />, label: "Level", value: workshop.level },
+    // { icon: <BarChart2 size={14} />, label: "Level", value: workshop.level },
+    // {
+    //   icon: <Calendar size={14} />,
+    //   label: "Age Group",
+    //   value: `Ages ${workshop.ageGroup}`,
+    // },
     {
       icon: <Calendar size={14} />,
-      label: "Age Group",
-      value: `Ages ${workshop.ageGroup}`,
+      label: "Date",
+      value: workshop.date,
     },
+    {
+      icon: <Clock size={14} />,
+      label: "Time",
+      value: workshop.time,
+    },
+    ...(workshop.isOffline && workshop.venue
+      ? [
+          {
+            icon: <MapPin size={14} />,
+            label: "Venue",
+            value: (
+              <div className="flex flex-col items-end gap-1">
+                <span className="font-bold text-right leading-tight max-w-47.5 block">
+                  {workshop.venue}
+                </span>
+                {workshop.googleMapsUrl && (
+                  <a
+                    href={workshop.googleMapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-bold text-teal hover:underline flex items-center gap-0.5"
+                  >
+                    View in Google Maps ↗
+                  </a>
+                )}
+              </div>
+            ),
+          },
+        ]
+      : []),
     {
       icon: <Users size={14} />,
       label: "Enrolled",
@@ -224,10 +259,11 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
 
   return (
     <div
-      className="sticky top-24 rounded-3xl overflow-hidden"
+      className="sticky top-24 rounded-3xl overflow-y-auto overscroll-contain"
       style={{
         boxShadow: "0 20px 60px rgba(0,0,0,0.14)",
         border: "1px solid #F3F4F6",
+        maxHeight: "calc(100vh - 6rem - 24px)", // matches top-24 (96px) + a little breathing room
       }}
     >
       {/* Thumbnail with play overlay */}
@@ -246,7 +282,8 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
           className="absolute inset-0 flex items-center justify-center transition-opacity"
           style={{ background: "rgba(0,0,0,0.28)" }}
         >
-          <div
+          {/* In future for video playbacks */}
+          {/* <div
             className="w-14 h-14 rounded-full flex items-center justify-center transition-transform group-hover:scale-110"
             style={{
               background: "#F5C518",
@@ -259,7 +296,7 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
               color="#1A1A1A"
               style={{ marginLeft: 2 }}
             />
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -285,20 +322,15 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
         </div>
 
         {/* Enroll CTA */}
-        <motion.button
-          whileHover={{ scale: 1.025 }}
-          whileTap={{ scale: 0.97 }}
-          className="w-full py-4 rounded-2xl text-base font-extrabold mb-3 transition-shadow flex items-center justify-center gap-2"
-          style={{
-            background: "linear-gradient(135deg, #F5C518 0%, #FFD740 100%)",
-            color: "#1A1A1A",
-            fontFamily: "var(--font-nunito)",
-            boxShadow: "0 8px 24px rgba(245,197,24,0.45)",
-          }}
-        >
-          {workshop.isFree ? "Enroll for Free" : "Enroll Now"}
-          <ArrowRight size={17} />
-        </motion.button>
+        <EnrollButton
+          workshopId={workshop._id}
+          price={workshop.price ?? 0}
+          isFree={workshop.isFree}
+          slug={workshop.slug}
+          isLoggedIn={isLoggedIn}
+          initialIsEnrolled={isEnrolled}
+          isEnrollmentOpen={workshop.isEnrollmentOpen}
+        />
         <p
           className="text-xs text-center mb-6"
           style={{ color: "#9CA3AF", fontFamily: "var(--font-nunito)" }}
@@ -313,13 +345,15 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
           {stats.map(({ icon, label, value }) => (
             <div
               key={label}
-              className="flex items-center justify-between text-sm"
+              className="flex items-start justify-between text-sm py-0.5"
             >
               <span
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 pt-0.5"
                 style={{ color: "#6B7280", fontFamily: "var(--font-nunito)" }}
               >
-                <span style={{ color: "#2BBCB0" }}>{icon}</span>
+                <span style={{ color: "#2BBCB0", display: "inline-flex" }}>
+                  {icon}
+                </span>
                 {label}
               </span>
               <span
@@ -369,13 +403,118 @@ function EnrollSidebar({ workshop }: { workshop: Workshop }) {
   );
 }
 
+// ─── Mobile/Tablet key-details card (Date · Time · Venue) ─────────────────────
+// Desktop hides the right sidebar below `lg`, so this card is what carries the
+// date/time/venue info on phones and tablets. Placed right at the top of the
+// body content so it's visible without any scrolling.
+function MobileKeyDetails({ workshop }: { workshop: Workshop }) {
+  const hasVenue = workshop.isOffline && workshop.venue;
+
+  return (
+    <div
+      className="lg:hidden rounded-2xl p-4 mb-8"
+      style={{
+        background: "white",
+        border: "1px solid #F3F4F6",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.03)",
+      }}
+    >
+      <div
+        className={`grid gap-4 ${hasVenue ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"}`}
+      >
+        <div className="flex items-start gap-2.5">
+          <span
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: "rgba(43,188,176,0.12)", color: "#2BBCB0" }}
+          >
+            <Calendar size={15} />
+          </span>
+          <div className="min-w-0">
+            <p
+              className="text-[11px] font-semibold"
+              style={{ color: "#9CA3AF" }}
+            >
+              Date
+            </p>
+            <p
+              className="text-sm font-bold leading-tight"
+              style={{ fontFamily: "var(--font-nunito)", color: "#1A1A1A" }}
+            >
+              {workshop.date}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2.5">
+          <span
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+            style={{ background: "rgba(43,188,176,0.12)", color: "#2BBCB0" }}
+          >
+            <Clock size={15} />
+          </span>
+          <div className="min-w-0">
+            <p
+              className="text-[11px] font-semibold"
+              style={{ color: "#9CA3AF" }}
+            >
+              Time
+            </p>
+            <p
+              className="text-sm font-bold leading-tight"
+              style={{ fontFamily: "var(--font-nunito)", color: "#1A1A1A" }}
+            >
+              {workshop.time}
+            </p>
+          </div>
+        </div>
+
+        {hasVenue && (
+          <div className="flex items-start gap-2.5">
+            <span
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(43,188,176,0.12)", color: "#2BBCB0" }}
+            >
+              <MapPin size={15} />
+            </span>
+            <div className="min-w-0">
+              <p
+                className="text-[11px] font-semibold"
+                style={{ color: "#9CA3AF" }}
+              >
+                Venue
+              </p>
+              <p
+                className="text-sm font-bold leading-tight"
+                style={{ fontFamily: "var(--font-nunito)", color: "#1A1A1A" }}
+              >
+                {workshop.venue}
+              </p>
+              {workshop.googleMapsUrl && (
+                <a
+                  href={workshop.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-bold hover:underline inline-block mt-0.5"
+                  style={{ color: "#2BBCB0" }}
+                >
+                  View in Google Maps ↗
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Avatar colours for review initials ──────────────────────────────────────
-const AVATAR_COLORS = [
-  { bg: "#FFF9E6", text: "#92700A" },
-  { bg: "#E8F8F7", text: "#1A7A72" },
-  { bg: "#FEF0EB", text: "#C0532A" },
-  { bg: "#E8F6FE", text: "#0369A1" },
-];
+// const AVATAR_COLORS = [
+//   { bg: "#FFF9E6", text: "#92700A" },
+//   { bg: "#E8F8F7", text: "#1A7A72" },
+//   { bg: "#FEF0EB", text: "#C0532A" },
+//   { bg: "#E8F6FE", text: "#0369A1" },
+// ];
 
 // ─── Section divider ─────────────────────────────────────────────────────────
 function SectionDivider() {
@@ -397,7 +536,15 @@ function SectionDivider() {
 }
 
 // ─── Mobile sticky enroll bar ─────────────────────────────────────────────────
-function MobileEnrollBar({ workshop }: { workshop: Workshop }) {
+function MobileEnrollBar({
+  workshop,
+  isLoggedIn,
+  isEnrolled,
+}: {
+  workshop: Workshop;
+  isLoggedIn: boolean;
+  isEnrolled: boolean;
+}) {
   return (
     <div
       className="lg:hidden fixed bottom-0 left-0 right-0 z-30 px-4 py-3"
@@ -405,36 +552,37 @@ function MobileEnrollBar({ workshop }: { workshop: Workshop }) {
         background: "white",
         borderTop: "1px solid #E5E7EB",
         boxShadow: "0 -8px 24px rgba(0,0,0,0.08)",
+        paddingBottom: "calc(0.75rem + env(safe-area-inset-bottom))",
       }}
     >
       <div className="flex items-center gap-3">
-        <div>
-          <p className="text-xs font-semibold" style={{ color: "#9CA3AF" }}>
-            Workshop
-          </p>
+        <div className="min-w-0">
           <p
-            className="text-base font-extrabold"
+            className="text-base font-extrabold leading-tight"
             style={{ fontFamily: "var(--font-nunito)", color: "#1A1A1A" }}
           >
             {workshop.isFree
               ? "FREE"
               : `₹${workshop.price?.toLocaleString("en-IN")}`}
           </p>
+          <p
+            className="text-[11px] font-semibold truncate"
+            style={{ color: "#6B7280", fontFamily: "var(--font-nunito)" }}
+          >
+            {workshop.date} · {workshop.time}
+          </p>
         </div>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-          className="flex-1 py-3.5 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2"
-          style={{
-            background: "linear-gradient(135deg, #F5C518 0%, #FFD740 100%)",
-            color: "#1A1A1A",
-            fontFamily: "var(--font-nunito)",
-            boxShadow: "0 6px 20px rgba(245,197,24,0.4)",
-          }}
-        >
-          {workshop.isFree ? "Enroll for Free" : "Enroll Now"}
-          <ArrowRight size={16} />
-        </motion.button>
+        <div className="flex-1">
+          <EnrollButton
+            workshopId={workshop._id}
+            price={workshop.price ?? 0}
+            isFree={workshop.isFree}
+            slug={workshop.slug}
+            isLoggedIn={isLoggedIn}
+            initialIsEnrolled={isEnrolled}
+            isEnrollmentOpen={workshop.isEnrollmentOpen}
+          />
+        </div>
       </div>
     </div>
   );
@@ -443,22 +591,25 @@ function MobileEnrollBar({ workshop }: { workshop: Workshop }) {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 export default function WorkshopDetailClient({
   workshop,
+  isLoggedIn = false,
+  isEnrolled = false,
 }: {
   workshop: Workshop;
+  isLoggedIn?: boolean;
+  isEnrolled?: boolean;
 }) {
+  const searchParams = useSearchParams();
+  const paymentStatus = searchParams.get("payment");
+  const enrolledStatus = searchParams.get("enrolled");
+
   const totalLessons = workshop.curriculum.reduce(
     (acc, s) => acc + s.lessons.length,
     0,
   );
-  const totalMins = workshop.curriculum.reduce(
-    (acc, s) =>
-      acc +
-      s.lessons.reduce((a, l) => {
-        const m = parseInt(l.duration);
-        return a + (isNaN(m) ? 0 : m);
-      }, 0),
-    0,
-  );
+  const totalMins = workshop.curriculum.reduce((acc, s) => {
+    const m = parseInt(s.duration);
+    return acc + (isNaN(m) ? 0 : m);
+  }, 0);
 
   return (
     <main
@@ -468,6 +619,29 @@ export default function WorkshopDetailClient({
         paddingBottom: "80px",
       }}
     >
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        strategy="lazyOnload"
+      />
+
+      {paymentStatus === "failed" && (
+        <div className="max-w-7xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm font-semibold">
+            <span className="text-base">⚠️</span>
+            Payment failed. Please try again.
+          </div>
+        </div>
+      )}
+
+      {enrolledStatus === "true" && (
+        <div className="max-w-7xl mx-auto px-4 pt-4 sm:px-6 lg:px-8">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3.5 rounded-2xl flex items-center gap-2 text-sm font-semibold">
+            <span className="text-base">🎉</span>
+            You&apos;re enrolled! Welcome to the workshop.
+          </div>
+        </div>
+      )}
+
       {/* ── HERO BANNER ───────────────────────────────────────────────────────── */}
       <div className="relative w-full pt-16" style={{ minHeight: 480 }}>
         <Image
@@ -557,18 +731,21 @@ export default function WorkshopDetailClient({
                 border: "1px solid rgba(43,188,176,0.3)",
               }}
             >
-              Ages {workshop.ageGroup}
+              {workshop.ageGroup}
             </span>
-            <span
-              className="px-3 py-1 rounded-full text-xs font-bold"
-              style={{
-                background: "rgba(56,189,248,0.15)",
-                color: "#38BDF8",
-                border: "1px solid rgba(56,189,248,0.3)",
-              }}
-            >
-              {workshop.skill}
-            </span>
+            {(workshop.skills || []).map((s) => (
+              <span
+                key={s}
+                className="px-3 py-1 rounded-full text-xs font-bold font-nunito"
+                style={{
+                  background: "rgba(56,189,248,0.15)",
+                  color: "#38BDF8",
+                  border: "1px solid rgba(56,189,248,0.3)",
+                }}
+              >
+                {s}
+              </span>
+            ))}
           </motion.div>
 
           {/* Title */}
@@ -610,7 +787,7 @@ export default function WorkshopDetailClient({
             animate={{ opacity: 1 }}
             transition={{ duration: 0.4, delay: 0.18 }}
           >
-            <div className="flex items-center gap-1.5">
+            {/* <div className="flex items-center gap-1.5">
               <Star size={15} fill="#F5C518" stroke="#F5C518" strokeWidth={1} />
               <span className="font-extrabold text-white">
                 {workshop.rating}
@@ -619,7 +796,7 @@ export default function WorkshopDetailClient({
                 ({workshop.reviews.length} reviews)
               </span>
             </div>
-            <span style={{ color: "rgba(255,255,255,0.25)" }}>|</span>
+            <span style={{ color: "rgba(255,255,255,0.25)" }}>|</span> */}
             <div className="flex items-center gap-1.5">
               <Users size={13} style={{ color: "#2BBCB0" }} />
               <span style={{ color: "rgba(255,255,255,0.85)" }}>
@@ -677,7 +854,7 @@ export default function WorkshopDetailClient({
               { icon: <Clock size={11} />, label: workshop.duration },
               {
                 icon: <Calendar size={11} />,
-                label: `Ages ${workshop.ageGroup}`,
+                label: `${workshop.ageGroup}`,
               },
             ].map(({ icon, label }) => (
               <span
@@ -703,6 +880,10 @@ export default function WorkshopDetailClient({
         <div className="flex flex-col lg:flex-row gap-10">
           {/* ── LEFT: scrollable content ─────────────────────────────────────── */}
           <div className="flex-1 min-w-0 space-y-0">
+            {/* Mobile/Tablet only: Date · Time · Venue — hidden on lg since the
+                sidebar covers this. Placed first so it's visible immediately. */}
+            <MobileKeyDetails workshop={workshop} />
+
             {/* ════ 1. WHAT YOUR CHILD WILL LEARN ════ */}
             <motion.section
               id="overview"
@@ -713,7 +894,7 @@ export default function WorkshopDetailClient({
             >
               <SectionHeading
                 icon={<Zap size={18} />}
-                title="What your child will learn"
+                title="What you'll walk away with"
                 accent="#F5C518"
               />
 
@@ -895,6 +1076,7 @@ export default function WorkshopDetailClient({
                     key={i}
                     index={i}
                     title={section.title}
+                    duration={section.duration}
                     lessons={section.lessons}
                   />
                 ))}
@@ -994,7 +1176,7 @@ export default function WorkshopDetailClient({
             <SectionDivider />
 
             {/* ════ 4. REVIEWS ════ */}
-            <motion.section
+            {/* <motion.section
               id="reviews"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -1005,18 +1187,18 @@ export default function WorkshopDetailClient({
                 icon={<MessageSquare size={18} />}
                 title="What Parents Are Saying"
                 accent="#F5C518"
-              />
+              /> */}
 
               {/* Overall rating card */}
-              <div
+              {/* <div
                 className="flex flex-row items-stretch gap-0 mb-8 rounded-3xl overflow-hidden"
                 style={{
                   border: "1px solid #F3F4F6",
                   boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
                 }}
-              >
+              > */}
                 {/* Left: big score */}
-                <div
+                {/* <div
                   className="flex flex-col items-center justify-center px-5 py-6 shrink-0"
                   style={{
                     background:
@@ -1045,10 +1227,10 @@ export default function WorkshopDetailClient({
                   >
                     {workshop.reviews.length} reviews
                   </p>
-                </div>
+                </div> */}
 
                 {/* Right: rating bars */}
-                <div
+                {/* <div
                   className="flex-1 flex flex-col justify-center gap-2 px-4 py-5"
                   style={{ background: "white", minWidth: 0 }}
                 >
@@ -1112,10 +1294,10 @@ export default function WorkshopDetailClient({
                     );
                   })}
                 </div>
-              </div>
+              </div> */}
 
               {/* Review cards */}
-              <div className="space-y-4">
+              {/* <div className="space-y-4">
                 {workshop.reviews.map((r, i) => {
                   const ac = AVATAR_COLORS[i % AVATAR_COLORS.length];
                   return (
@@ -1188,7 +1370,7 @@ export default function WorkshopDetailClient({
                   );
                 })}
               </div>
-            </motion.section>
+            </motion.section> */}
 
             {/* ════ BOTTOM CTA STRIP ════ */}
             <motion.div
@@ -1209,7 +1391,7 @@ export default function WorkshopDetailClient({
                     className="text-xs font-bold uppercase tracking-widest mb-2"
                     style={{ color: "#F5C518" }}
                   >
-                    ✦ Always Free
+                    {workshop.isFree ? "✦ Always Free" : "✦ Premium Workshop"}
                   </p>
                   <h3
                     className="text-xl font-extrabold text-white mb-1"
@@ -1228,34 +1410,38 @@ export default function WorkshopDetailClient({
                     already enrolled
                   </p>
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.97 }}
-                  className="shrink-0 px-7 py-4 rounded-2xl text-base font-extrabold flex items-center gap-2 whitespace-nowrap"
-                  style={{
-                    background:
-                      "linear-gradient(135deg, #F5C518 0%, #FFD740 100%)",
-                    color: "#1A1A1A",
-                    fontFamily: "var(--font-nunito)",
-                    boxShadow: "0 8px 24px rgba(245,197,24,0.4)",
-                  }}
-                >
-                  Enroll for Free
-                  <ArrowRight size={18} />
-                </motion.button>
+                <div className="shrink-0 w-full sm:w-auto min-w-50">
+                  <EnrollButton
+                    workshopId={workshop._id}
+                    price={workshop.price ?? 0}
+                    isFree={workshop.isFree}
+                    slug={workshop.slug}
+                    isLoggedIn={isLoggedIn}
+                    initialIsEnrolled={isEnrolled}
+                    isEnrollmentOpen={workshop.isEnrollmentOpen}
+                  />
+                </div>
               </div>
             </motion.div>
           </div>
 
           {/* ── RIGHT: Sticky sidebar ──────────────────────────────────────────── */}
           <div className="hidden lg:block w-90 shrink-0">
-            <EnrollSidebar workshop={workshop} />
+            <EnrollSidebar
+              workshop={workshop}
+              isLoggedIn={isLoggedIn}
+              isEnrolled={isEnrolled}
+            />
           </div>
         </div>
       </div>
 
       {/* Mobile sticky bottom enroll bar */}
-      <MobileEnrollBar workshop={workshop} />
+      <MobileEnrollBar
+        workshop={workshop}
+        isLoggedIn={isLoggedIn}
+        isEnrolled={isEnrolled}
+      />
     </main>
   );
 }

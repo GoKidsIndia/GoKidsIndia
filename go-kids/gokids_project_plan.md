@@ -414,19 +414,62 @@ Build `app/(public)/page.tsx`. All content is static for now. Sections in order:
 
 ---
 
-### WEEK 6 — Workshops: Enrollment + Instructor Dashboard
+### WEEK 6 — Workshops: Payment + Enrollment + Dashboard
+ 
+**Goal:** Replace the old instructor dashboard entirely with a payment-gated enrollment flow and parent dashboard workshop tab.
+ 
+**What is removed from the original Week 6:**
+- ❌ Instructor dashboard (`/instructor/*`) — entirely removed
+- ❌ Workshop creation form for instructors
+- ❌ Curriculum builder for instructors
+- ❌ Publish toggle for instructors
+**What replaces it:**
+ 
+**A — Paytm Payment Integration**
+- Install `paytmchecksum` npm package
+- Add all Paytm env vars to `.env.local` and `.env.example`
+- Build `POST /api/payments/initiate` (see spec above)
+- Build `POST /api/payments/callback` (see spec above)
+- Build `Payment` Mongoose model
+- Build `Enrollment` Mongoose model
+**B — Workshop Detail Page Updates (`/workshops/[slug]`)**
+- Sticky enrollment sidebar: dynamic button state (not logged in / free / paid / already enrolled)
+- Free workshops: one API call → enrolled → redirect to dashboard
+- Paid workshops: initiate → hidden form submit → Paytm → callback → enrolled
+- `GET /api/enrollments/check?workshopId=xxx` — check if parent already enrolled
+- Payment failed state: coral toast on `/workshops/[slug]?payment=failed`
+- Enrolled success state: teal toast on dashboard on redirect
+**C — Enrollment Confirmation Email**
+- `lib/email/sendEnrollmentConfirmation.ts` with Nodemailer
+- Basic template with workshop details (final copy to be provided later)
+- Called inside payment callback on success
+**D — Parent Dashboard My Workshops Tab**
+- `GET /api/enrollments` returns parent's enrollments with workshop data populated
+- Workshop cards in a grid with enrolled status badge
+- Empty state with Browse Workshops CTA
+**AI Agent Prompt — Week 6:**
+> "Build the Go Kids Workshop enrollment and payment system in Next.js 14. Brand: yellow #F5C518, teal #2BBCB0, coral #F4845F, white backgrounds, Nunito, Framer Motion, NO dark mode. NO instructor dashboard — all workshop content is admin-managed only.
+>
+> ENV VARIABLES NEEDED: PAYTM_MERCHANT_ID, PAYTM_MERCHANT_KEY, PAYTM_WEBSITE, PAYTM_CHANNEL_ID, PAYTM_INDUSTRY_TYPE, PAYTM_CALLBACK_URL, SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, SMTP_FROM.
+>
+> MONGOOSE MODELS:
+> Payment: { parentId, workshopId, orderId, txnId, amount, status ('initiated'|'success'|'failed'), paytmResponse{}, createdAt }
+> Enrollment: { parentId, workshopId, status ('pending'|'confirmed'|'cancelled'), paymentId, amountPaid, enrolledAt }
+>
+> API ROUTES:
+> 1. POST /api/payments/initiate — auth check (parent session required), check workshop exists + isPublished, check no duplicate enrollment (return 409 if exists), create Payment doc status='initiated'. If isFree: create Enrollment directly + call sendEnrollmentConfirmation() + return { success: true, free: true }. If paid: generate Paytm checksum using paytmchecksum package, return { success: true, paytmParams } for frontend form submission.
+> 2. POST /api/payments/callback — verify Paytm checksum. On TXN_SUCCESS: update Payment status='success', create Enrollment status='confirmed', increment workshop.enrolledCount, call sendEnrollmentConfirmation(), redirect to /parent/dashboard?tab=workshops&enrolled=true. On TXN_FAILURE: update Payment status='failed', redirect to /workshops/[slug]?payment=failed.
+> 3. GET /api/enrollments — parent session, return all enrollments populated with workshop title, thumbnail, duration, sessions, ageGroup, price, isFree, slug.
+> 4. GET /api/enrollments/check?workshopId=xxx — parent session, return { enrolled: boolean }.
+>
+> WORKSHOP DETAIL PAGE /workshops/[slug] sticky sidebar update:
+> - On mount, if parent logged in: call GET /api/enrollments/check?workshopId=[id]
+> - Button states: (1) not logged in → 'Login to Enroll' linking to /login?redirect=/workshops/[slug]; (2) already enrolled → 'Already Enrolled ✓' green disabled; (3) free workshop → 'Enroll Free' yellow button → POST /api/payments/initiate → on success redirect to dashboard; (4) paid workshop → 'Enroll Now — ₹{price}' yellow button → POST /api/payments/initiate → on success build a hidden HTML form with paytmParams and submit it programmatically to redirect to Paytm; (5) payment failed (check query param) → show coral Sonner toast 'Payment failed. Please try again.'
+>
+> EMAIL: Create lib/email/sendEnrollmentConfirmation.ts using Nodemailer. Send to parent email. Subject: 'You're enrolled in [Workshop Title] — Go Kids 🎉'. HTML template: yellow header band with Go Kids logo, white body with parent name greeting, workshop details table (title, duration, sessions, age group, amount paid, txnId for paid), placeholder paragraph 'More details about your session will be shared soon.', footer with gokids.co.in and phone. Use inline styles only (no Tailwind in email HTML).
+>
+> PARENT DASHBOARD My Workshops tab: fetch GET /api/enrollments, render a grid of enrolled workshop cards. Each card: thumbnail (next/image 16:9), title (Nunito 700), teal 'Enrolled ✓' badge, duration chip, sessions chip, amount paid (or 'Free'), 'View Workshop' button → /workshops/[slug]. Empty state: illustration + 'You haven't enrolled in any workshops yet' + yellow 'Browse Workshops' button → /workshops."
 
-**Goal:** Enrollment flow and instructor content management.
-
-**Deliverables:**
-- Enrollment → parent enrolled workshop view with session list (Zoom/Meet links)
-- "My Workshops" tab in parent dashboard
-- Instructor dashboard: white sidebar, yellow active states, consistent brand
-- Multi-step workshop creation form: basic info + Cloudinary thumbnail + curriculum builder
-- Session reordering, publish toggle
-
-**AI Agent Prompt Focus:**
-> "Build Workshop enrollment and instructor dashboard for Go Kids Week 6. Brand rules apply throughout: yellow primary, white backgrounds, Nunito, Framer Motion, no dark mode. Enrollment: POST /api/enrollments, duplicate check (409). Parent 'My Workshops' tab: enrolled workshops as cards (same WorkshopCard style), clicking opens session list with date/time chips and a teal Zoom link button. Instructor dashboard /instructor: white sidebar with Go Kids logo, yellow active nav states. 'Create Workshop' multi-step form: Step 1 basic info + Cloudinary thumbnail upload (show preview with next/image on upload); Step 2 curriculum builder — add Section headers (teal bg label), within each add Session rows (title input, type radio styled as pill toggles, link input, date-time picker, duration). Session rows have animated entry (Framer Motion layout animation) and up/down reorder buttons. Step 3: preview card + publish toggle (ShadCN Switch, yellow when on). All form validation React Hook Form + Zod."
 
 ---
 

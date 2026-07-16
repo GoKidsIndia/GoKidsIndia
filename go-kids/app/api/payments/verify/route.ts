@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         workshopId: payment.workshopId,
         paymentId: payment._id,
         status: "confirmed",
-        amountPaid: Math.round(payment.amount / 100), // convert paise → INR
+        amountPaid: Number(payment.amount.toString()),
         enrolledAt: new Date(),
       });
       enrollmentId = enrollment._id.toString();
@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
           parentName: parentDoc.name,
           bookingId: enrollmentId,
           workshop: workshopDocToEmailData(workshop),
-          amountPaid: Math.round(payment.amount / 100),
+          amountPaid: Number(payment.amount.toString()),
           txnId: razorpay_payment_id,
         }).catch((err) =>
           console.error("[Email] Failed to send confirmation:", err),

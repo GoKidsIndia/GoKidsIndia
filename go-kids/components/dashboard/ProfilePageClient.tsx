@@ -505,28 +505,7 @@ export default function ProfilePageClient({
                 </p>
               </div>
 
-              {childrenList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-3xl bg-white">
-                  <AlertCircle size={28} className="text-coral mb-4" />
-                  <h3
-                    className="text-lg font-bold text-brand-black mb-1"
-                    style={{ fontFamily: "var(--font-nunito)" }}
-                  >
-                    Children profiles required
-                  </h3>
-                  <p className="text-xs text-brand-grey-text max-w-sm mb-6">
-                    Please add a child profile first in the &quot;My
-                    Children&quot; tab to register them for workshops.
-                  </p>
-                  <button
-                    onClick={() => handleTabChange("children")}
-                    className="px-5 py-2.5 rounded-full text-sm font-bold bg-primary text-brand-black cursor-pointer"
-                    style={{ fontFamily: "var(--font-nunito)" }}
-                  >
-                    Manage Children
-                  </button>
-                </div>
-              ) : enrollments.length === 0 ? (
+              {enrollments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center py-16 px-6 text-center border border-[#E5E7EB] rounded-4xl bg-white space-y-4 shadow-sm">
                   <div className="w-14 h-14 rounded-2xl bg-sky-50 flex items-center justify-center text-2xl mx-auto">
                     📚
@@ -538,9 +517,8 @@ export default function ProfilePageClient({
                     No registered workshops yet
                   </h3>
                   <p className="text-xs text-brand-grey-text max-w-sm">
-                    You haven&apos;t enrolled your children in any workshops
-                    yet. Explore our expert-led skill building workshops to get
-                    started.
+                    You haven&apos;t enrolled in any workshops yet. Explore our
+                    expert-led skill building workshops to get started.
                   </p>
                   <Link
                     href="/workshops"
@@ -603,14 +581,14 @@ export default function ProfilePageClient({
                           </div>
 
                           <div className="flex items-center justify-between pt-2 border-t border-brand-grey">
-                            <span className="text-xs sm:text-sm font-extrabold text-brand-black">
+                            <span className="text-md sm:text-lg font-extrabold text-brand-black">
                               {workshop.isFree
                                 ? "Free"
                                 : `₹${enrol.amountPaid}`}
                             </span>
                             <Link
                               href={`/workshops/${workshop.slug}`}
-                              className="px-4 py-2 rounded-xl text-[10px] sm:text-xs font-extrabold bg-brand-offwhite hover:bg-primary text-brand-black border border-brand-grey transition-colors text-center"
+                              className="px-4 py-2 rounded-xl text-sm sm:text-md font-extrabold bg-brand-offwhite hover:bg-primary text-brand-black border border-brand-grey transition-colors text-center"
                               style={{
                                 fontFamily: "var(--font-heading)",
                                 textDecoration: "none",

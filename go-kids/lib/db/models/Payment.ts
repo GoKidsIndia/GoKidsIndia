@@ -8,7 +8,7 @@ export interface IPayment extends Document {
   razorpayOrderId: string; // created by Razorpay
   razorpayPaymentId?: string; // filled on success
   razorpaySignature?: string; // filled on success (for verification)
-  amount: number; // in paise (e.g. ₹499 → 49900)
+  amount: mongoose.Types.Decimal128; // in rupees (supports decimals, e.g. 1499.00)
   currency: string; // "INR"
   status: "initiated" | "success" | "failed";
   razorpayResponse?: Record<string, unknown>; // raw webhook/callback payload
@@ -32,7 +32,7 @@ const PaymentSchema = new Schema<IPayment>(
     },
     razorpayPaymentId: { type: String },
     razorpaySignature: { type: String },
-    amount: { type: Number, required: true }, // paise
+    amount: { type: Schema.Types.Decimal128, required: true },
     currency: { type: String, required: true, default: "INR" },
     status: {
       type: String,

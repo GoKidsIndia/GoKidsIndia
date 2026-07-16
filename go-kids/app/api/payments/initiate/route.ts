@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       parentId: new mongoose.Types.ObjectId(parentId),
       workshopId: new mongoose.Types.ObjectId(workshopId),
       razorpayOrderId: order.id,
-      amount: amountInPaise,
+      amount: workshop.price ?? 0,
       currency: "INR",
       status: "initiated",
     });

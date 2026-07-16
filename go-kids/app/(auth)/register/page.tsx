@@ -281,9 +281,9 @@ export default function RegisterPage() {
                 style={{ color: "#1A1A1A", fontFamily: "var(--font-nunito)" }}
               >
                 Mobile Number{" "}
-                <span style={{ color: "#9CA3AF", fontWeight: 400 }}>
+                {/* <span style={{ color: "#9CA3AF", fontWeight: 400 }}>
                   (optional)
-                </span>
+                </span> */}
               </label>
               <div className="relative">
                 <Phone
